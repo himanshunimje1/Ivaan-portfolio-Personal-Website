@@ -9,7 +9,7 @@ export const timeline = [
         id: 'birth-day',
         title: 'Hello, Ivaan',
         color: '#93c5fd',
-        imageUrl: '/diary/Ivaan%20Portfolio%20Pic/028A9185.JPG',
+        imageUrl: '/diary/sample.svg',
       },
     ],
   },
