@@ -4,11 +4,17 @@ export const timeline = [
     title: 'Birth',
     range: 'Welcome home',
     folder: 'birth',
-    items: [
+    photos: [
       {
         id: 'birth-day',
         title: 'Hello, Ivaan',
         color: '#93c5fd',
+        imageUrl: '/diary/sample.svg',
+      },
+      {
+        id: 'first-sleep',
+        title: 'First sleep',
+        color: '#bfdbfe',
         imageUrl: '/diary/sample.svg',
       },
     ],
@@ -18,12 +24,12 @@ export const timeline = [
     title: 'Month 1',
     range: 'First smiles',
     folder: 'month-1',
-    items: [
+    photos: [
       {
         id: 'month-1',
         title: 'Tiny yawns',
         color: '#fca5a5',
-        imageUrl: '',
+        imageUrl: '/diary/sample.svg',
       },
     ],
   },
@@ -32,12 +38,12 @@ export const timeline = [
     title: 'Month 2',
     range: 'Gentle curiosity',
     folder: 'month-2',
-    items: [
+    photos: [
       {
         id: 'month-2',
         title: 'Warm cuddles',
         color: '#fde68a',
-        imageUrl: '',
+        imageUrl: '/diary/sample.svg',
       },
     ],
   },
@@ -46,12 +52,12 @@ export const timeline = [
     title: 'Month 3',
     range: 'Bright eyes',
     folder: 'month-3',
-    items: [
+    photos: [
       {
         id: 'month-3',
         title: 'Peekaboo',
         color: '#fdba74',
-        imageUrl: '',
+        imageUrl: '/diary/sample.svg',
       },
     ],
   },
@@ -60,12 +66,12 @@ export const timeline = [
     title: 'Month 4',
     range: 'Little giggles',
     folder: 'month-4',
-    items: [
+    photos: [
       {
         id: 'month-4',
         title: 'Rolling over',
         color: '#a5b4fc',
-        imageUrl: '',
+        imageUrl: '/diary/sample.svg',
       },
     ],
   },
@@ -74,12 +80,12 @@ export const timeline = [
     title: 'Month 5',
     range: 'New sounds',
     folder: 'month-5',
-    items: [
+    photos: [
       {
         id: 'month-5',
         title: 'Happy waves',
         color: '#f9a8d4',
-        imageUrl: '',
+        imageUrl: '/diary/sample.svg',
       },
     ],
   },
@@ -88,12 +94,12 @@ export const timeline = [
     title: 'Month 6',
     range: 'Half-year joy',
     folder: 'month-6',
-    items: [
+    photos: [
       {
         id: 'month-6',
         title: 'First sit',
         color: '#86efac',
-        imageUrl: '',
+        imageUrl: '/diary/sample.svg',
       },
     ],
   },
@@ -102,12 +108,12 @@ export const timeline = [
     title: 'Year 1',
     range: 'One candle',
     folder: 'year-1',
-    items: [
+    photos: [
       {
         id: 'year-1',
         title: 'First birthday',
         color: '#60a5fa',
-        imageUrl: '',
+        imageUrl: '/diary/sample.svg',
       },
     ],
   },
@@ -116,12 +122,12 @@ export const timeline = [
     title: 'Year 2',
     range: 'Bigger adventures',
     folder: 'year-2',
-    items: [
+    photos: [
       {
         id: 'year-2',
         title: 'Playtime',
         color: '#f472b6',
-        imageUrl: '',
+        imageUrl: '/diary/sample.svg',
       },
     ],
   },
@@ -130,12 +136,12 @@ export const timeline = [
     title: 'Year 3',
     range: 'Little explorer',
     folder: 'year-3',
-    items: [
+    photos: [
       {
         id: 'year-3',
         title: 'Story time',
         color: '#fbbf24',
-        imageUrl: '',
+        imageUrl: '/diary/sample.svg',
       },
     ],
   },
