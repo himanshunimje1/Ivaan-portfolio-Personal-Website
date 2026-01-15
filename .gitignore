@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Diary media (keep only one test image)
+public/diary/Ivaan Portfolio Pic/**
+!public/diary/Ivaan Portfolio Pic/028A9185.JPG
