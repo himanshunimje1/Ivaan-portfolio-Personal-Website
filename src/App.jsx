@@ -46,6 +46,24 @@ export default function App() {
     }
   };
 
+  // Add scroll/wheel listener for picture changing
+  useEffect(() => {
+    const handleWheel = (e) => {
+      // deltaY > 0 means scroll down -> next picture (right)
+      // deltaY < 0 means scroll up -> previous picture (left)
+      if (Math.abs(e.deltaY) > 30) { // Threshold to prevent too fast switching
+        if (e.deltaY > 0) {
+          paginate(1);
+        } else {
+          paginate(-1);
+        }
+      }
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: true });
+    return () => window.removeEventListener('wheel', handleWheel);
+  }, [currentIndex, photos.length]);
+
   if (photos.length === 0) return (
     <div className="h-screen w-screen bg-black flex items-center justify-center">
       <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin" />
@@ -77,16 +95,15 @@ export default function App() {
 
       {/* Top Navigation Bar */}
       <div className="absolute top-0 w-full z-30 p-4 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent">
-        <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
+        <button className="p-2 opacity-0 pointer-events-none">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
         </button>
         
         <div className="bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10 text-center">
-          <div className="text-[11px] font-semibold">Ivaan Portfolio</div>
-          <div className="text-[9px] text-white/50 tracking-wide">3 January • 9:38 PM</div>
+          <div className="text-[11px] font-semibold tracking-wider uppercase">Ivaan Portfolio</div>
         </div>
 
-        <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
+        <button className="p-2 opacity-0 pointer-events-none">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" /></svg>
         </button>
       </div>
@@ -116,16 +133,16 @@ export default function App() {
           <button 
             onClick={() => paginate(-1)}
             disabled={currentIndex === 0}
-            className={`pointer-events-auto p-3 rounded-full bg-black/20 backdrop-blur-md border border-white/10 hover:bg-white/10 transition-all ${currentIndex === 0 ? 'opacity-0' : 'opacity-100'}`}
+            className={`pointer-events-auto p-4 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-all ${currentIndex === 0 ? 'opacity-0' : 'opacity-100'}`}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
           </button>
           <button 
             onClick={() => paginate(1)}
             disabled={currentIndex === photos.length - 1}
-            className={`pointer-events-auto p-3 rounded-full bg-black/20 backdrop-blur-md border border-white/10 hover:bg-white/10 transition-all ${currentIndex === photos.length - 1 ? 'opacity-0' : 'opacity-100'}`}
+            className={`pointer-events-auto p-4 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-all ${currentIndex === photos.length - 1 ? 'opacity-0' : 'opacity-100'}`}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
           </button>
         </div>
       </div>
@@ -145,10 +162,10 @@ export default function App() {
                 setDirection(i > currentIndex ? 1 : -1);
                 setCurrentIndex(i);
               }}
-              className={`flex-shrink-0 h-10 w-10 rounded-sm overflow-hidden cursor-pointer transition-all duration-300 ${
+              className={`flex-shrink-0 h-12 w-12 rounded-md overflow-hidden cursor-pointer transition-all duration-300 ${
                 i === currentIndex 
-                  ? 'scale-125 border-2 border-white opacity-100' 
-                  : 'opacity-40 hover:opacity-100'
+                  ? 'scale-125 border-2 border-blue-400 opacity-100 z-10 shadow-[0_0_15px_rgba(0,150,255,0.4)]' 
+                  : 'opacity-30 hover:opacity-100 scale-90'
               }`}
             >
               <img src={photo.url} className="w-full h-full object-cover" alt="" />
@@ -156,24 +173,25 @@ export default function App() {
           ))}
         </div>
 
-        {/* Bottom Actions Bar */}
-        <div className="flex items-center justify-between px-6 text-white/80 max-w-md mx-auto w-full">
-          <button className="p-2 hover:bg-white/10 rounded-lg transition-colors"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6a3 3 0 100-2.684l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg></button>
-          <button className="p-2 hover:bg-white/10 rounded-lg transition-colors"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg></button>
-          
-          {/* Main Navigation Control Area */}
-          <div className="flex items-center gap-4 bg-white/5 backdrop-blur-xl rounded-full px-4 py-2 border border-white/10">
+        {/* Bottom Actions Bar - Minimalized */}
+        <div className="flex items-center justify-center px-6 text-white/80 max-w-md mx-auto w-full">
+          {/* Audio toggle in place of old icons */}
+          <div className="flex items-center gap-4 bg-white/5 backdrop-blur-2xl rounded-full px-6 py-2.5 border border-white/10 shadow-xl">
             <button 
-              onClick={() => setIsPlaying(!isPlaying)}
-              className="p-1 hover:text-white transition-colors"
+              onClick={() => {
+                if (audioRef.current) {
+                  if (isPlaying) audioRef.current.pause(); else audioRef.current.play();
+                  setIsPlaying(!isPlaying);
+                }
+              }}
+              className="flex items-center gap-3 group"
             >
-              <div className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-blue-400 shadow-[0_0_10px_cyan]' : 'bg-white/20'}`} />
+              <div className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${isPlaying ? 'bg-blue-400 shadow-[0_0_10px_cyan] scale-110' : 'bg-white/10'}`} />
+              <span className={`text-[10px] font-bold tracking-[0.3em] uppercase transition-colors ${isPlaying ? 'text-white' : 'text-white/30'}`}>
+                {isPlaying ? 'Sound Active' : 'Sound Muted'}
+              </span>
             </button>
-            <span className="text-[10px] font-bold tracking-widest uppercase opacity-40">Audio</span>
           </div>
-
-          <button className="p-2 hover:bg-white/10 rounded-lg transition-colors"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg></button>
-          <button className="p-2 hover:bg-white/10 rounded-lg transition-colors text-red-400"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
         </div>
       </div>
 
