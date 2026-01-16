@@ -8,125 +8,157 @@ const milestones = [
   { id: 'school', icon: '🎒', label: 'New World', index: 12 },
 ];
 
-const UniverseBackground = () => {
-  // Video files in public/diary/universe/ folder
-  const videos = [
-    '/diary/universe/galaxy1.mp4',
-    '/diary/universe/galaxy2.mp4',
-    '/diary/universe/galaxy3.mp4',
-    '/diary/universe/galaxy4.mp4',
-  ];
-  
-  // Fallback bright images if videos not available
-  const fallbackImages = [
-    "https://images.unsplash.com/photo-1464802686167-b939a6910659?q=80&w=2000&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2000&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=2000&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?q=80&w=2000&auto=format&fit=crop",
-  ];
-  
-  const [index, setIndex] = useState(0);
-  const [useVideo, setUseVideo] = useState(true);
-  const videoRef = useRef(null);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setIndex((prev) => (prev + 1) % videos.length);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const handleVideoError = () => {
-    setUseVideo(false);
-  };
+// Disney-style magical night sky background
+const DisneyBackground = () => {
+  const [stars] = useState(() => 
+    Array.from({ length: 150 }, () => ({
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 3 + 1,
+      twinkle: Math.random() * 2 + 1,
+      delay: Math.random() * 5
+    }))
+  );
 
   return (
-    <div className="fixed inset-0 z-0 bg-black overflow-hidden">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={index}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 2 }}
-          className="absolute inset-0 w-full h-full"
-        >
-          {useVideo ? (
-            <motion.video
-              ref={videoRef}
-              src={videos[index]}
-              autoPlay
-              loop
-              muted
-              playsInline
-              onError={handleVideoError}
-              className="w-full h-full object-cover"
-              style={{
-                filter: 'brightness(1.8) contrast(1.3) saturate(1.5)',
-              }}
-              animate={{
-                scale: [1, 1.15, 1],
-                x: [0, -50, 50, 0],
-                y: [0, 30, -30, 0],
-              }}
-              transition={{
-                scale: { duration: 25, repeat: Infinity, ease: "easeInOut" },
-                x: { duration: 30, repeat: Infinity, ease: "linear" },
-                y: { duration: 20, repeat: Infinity, ease: "linear" }
-              }}
-            />
-          ) : (
-            <motion.img
-              src={fallbackImages[index]}
-              className="w-full h-full object-cover"
-              style={{
-                filter: 'brightness(1.8) contrast(1.3) saturate(1.5)',
-              }}
-              animate={{
-                scale: [1, 1.2, 1],
-                x: [0, -60, 60, 0],
-                y: [0, 40, -40, 0],
-              }}
-              transition={{
-                scale: { duration: 25, repeat: Infinity, ease: "easeInOut" },
-                x: { duration: 35, repeat: Infinity, ease: "linear" },
-                y: { duration: 25, repeat: Infinity, ease: "linear" }
-              }}
-              alt="Universe"
-            />
-          )}
-        </motion.div>
-      </AnimatePresence>
-      {/* Subtle overlay to keep main photo visible */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.5)_100%)]" />
+    <div className="fixed inset-0 z-0 overflow-hidden">
+      {/* Deep night sky gradient - Disney style */}
+      <div 
+        className="absolute inset-0 w-full h-full"
+        style={{
+          background: 'radial-gradient(ellipse at center, #1a0a2e 0%, #0d0d1a 40%, #000000 100%)'
+        }}
+      />
+      
+      {/* Secondary gradient for depth */}
+      <div 
+        className="absolute inset-0 w-full h-full opacity-60"
+        style={{
+          background: 'linear-gradient(180deg, #2d1b4e 0%, #1a0a2e 30%, #000000 70%, #000000 100%)'
+        }}
+      />
+
+      {/* Twinkling Stars */}
+      <div className="absolute inset-0">
+        {stars.map((star, i) => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full bg-white"
+            style={{
+              left: `${star.x}%`,
+              top: `${star.y}%`,
+              width: `${star.size}px`,
+              height: `${star.size}px`,
+              boxShadow: `0 0 ${star.size * 2}px rgba(255, 255, 255, 0.8)`
+            }}
+            animate={{
+              opacity: [0.2, 1, 0.2, 1, 0.2],
+              scale: [0.8, 1.2, 0.8, 1.1, 0.8],
+            }}
+            transition={{
+              duration: star.twinkle,
+              repeat: Infinity,
+              delay: star.delay,
+              ease: "easeInOut"
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Subtle cloud layers for depth */}
+      <motion.div
+        className="absolute inset-0 opacity-10"
+        style={{
+          background: 'radial-gradient(ellipse 80% 50% at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)'
+        }}
+        animate={{
+          x: [0, 50, 0],
+          opacity: [0.05, 0.15, 0.05]
+        }}
+        transition={{
+          duration: 30,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      />
+      <motion.div
+        className="absolute inset-0 opacity-8"
+        style={{
+          background: 'radial-gradient(ellipse 60% 40% at 80% 60%, rgba(255,255,255,0.08) 0%, transparent 50%)'
+        }}
+        animate={{
+          x: [0, -40, 0],
+          opacity: [0.05, 0.12, 0.05]
+        }}
+        transition={{
+          duration: 25,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 2
+        }}
+      />
+
+      {/* Subtle radial overlay for photo focus */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.3)_100%)]" />
     </div>
   );
 };
 
+// Disney-style magical fireflies
 const Fireflies = () => {
-  const [flies] = useState(() => Array.from({ length: 25 }));
+  const [flies] = useState(() => 
+    Array.from({ length: 50 }, () => ({
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 4 + 2,
+      duration: 6 + Math.random() * 10,
+      delay: Math.random() * 5,
+      glow: Math.random() * 0.5 + 0.5
+    }))
+  );
+
   return (
     <div className="fixed inset-0 pointer-events-none z-10 overflow-hidden">
-      {flies.map((_, i) => (
+      {flies.map((fly, i) => (
         <motion.div
           key={i}
           initial={{ 
-            x: Math.random() * 100 + "%", 
-            y: Math.random() * 100 + "%",
+            x: fly.x + "%", 
+            y: fly.y + "%",
             opacity: 0 
           }}
           animate={{
-            x: [null, Math.random() * 100 + "%", Math.random() * 100 + "%"],
-            y: [null, Math.random() * 100 + "%", Math.random() * 100 + "%"],
-            opacity: [0, 0.7, 0.3, 0.8, 0],
-            scale: [0, 1.2, 0.8, 1, 0],
+            x: [
+              fly.x + "%",
+              (fly.x + (Math.random() - 0.5) * 30) + "%",
+              (fly.x + (Math.random() - 0.5) * 40) + "%",
+              (fly.x + (Math.random() - 0.5) * 30) + "%",
+              fly.x + "%"
+            ],
+            y: [
+              fly.y + "%",
+              (fly.y + (Math.random() - 0.5) * 20) + "%",
+              (fly.y + (Math.random() - 0.5) * 30) + "%",
+              (fly.y + (Math.random() - 0.5) * 20) + "%",
+              fly.y + "%"
+            ],
+            opacity: [0, fly.glow, 0.3, fly.glow, 0.2, fly.glow, 0],
+            scale: [0, 1.3, 0.7, 1.1, 0.8, 1, 0],
           }}
           transition={{
-            duration: 8 + Math.random() * 12,
+            duration: fly.duration,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: "easeInOut",
+            delay: fly.delay
           }}
-          className="absolute w-1.5 h-1.5 bg-yellow-200 rounded-full blur-[1px] shadow-[0_0_10px_#fff]"
+          className="absolute rounded-full"
+          style={{
+            width: `${fly.size}px`,
+            height: `${fly.size}px`,
+            background: 'radial-gradient(circle, #FFEB3B 0%, #FFC107 50%, transparent 100%)',
+            boxShadow: `0 0 ${fly.size * 3}px #FFEB3B, 0 0 ${fly.size * 5}px rgba(255, 235, 59, 0.5)`,
+            filter: 'blur(0.5px)'
+          }}
         />
       ))}
     </div>
@@ -252,7 +284,7 @@ export default function App() {
   return (
     <div className="h-screen w-screen bg-black text-white overflow-hidden font-sans select-none relative">
       <audio ref={audioRef} src="/diary/audio/ambient.mp3" loop />
-      <UniverseBackground />
+      <DisneyBackground />
       <Fireflies />
 
       {/* Scroll Progress Bar (DeSo-style) */}
