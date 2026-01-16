@@ -8,82 +8,77 @@ const milestones = [
   { id: 'school', icon: '🎒', label: 'New World', index: 12 },
 ];
 
-// High-definition James Webb / Universe background images
-const universeImages = [
-  "https://stsci-opo.org/STScI-01G8G07Z9P362V73FR7A7QN88B.png", // Carina Nebula
-  "https://stsci-opo.org/STScI-01G8GYE3S6ZPV9Z5X6XJZJG0Z5.png", // Southern Ring Nebula
-  "https://stsci-opo.org/STScI-01G8H0E8Z9P362V73FR7A7QN88B.png", // Stephan's Quintet
-  "https://stsci-opo.org/STScI-01G8H1E8Z9P362V73FR7A7QN88B.png", // Deep Field
-];
-
 const UniverseBackground = () => {
+  const images = [
+    "https://images.unsplash.com/photo-1464802686167-b939a6910659?q=80&w=2000&auto=format&fit=crop", // Galaxy
+    "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2000&auto=format&fit=crop", // Nebula
+    "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=2000&auto=format&fit=crop", // Earth/Space
+    "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?q=80&w=2000&auto=format&fit=crop", // Stars
+  ];
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setIndex((prev) => (prev + 1) % universeImages.length);
-    }, 6000); // Change every 6 seconds
+      setIndex((prev) => (prev + 1) % images.length);
+    }, 6000);
     return () => clearInterval(timer);
   }, []);
 
   return (
-    <div className="absolute inset-0 z-0 overflow-hidden bg-black">
+    <div className="fixed inset-0 z-0 bg-black">
       <AnimatePresence mode="wait">
         <motion.div
           key={index}
-          initial={{ opacity: 0, scale: 1.2 }}
+          initial={{ opacity: 0, scale: 1.1 }}
           animate={{ 
-            opacity: 0.4, 
+            opacity: 0.5, 
             scale: 1,
-            x: [0, -20, 20, 0],
-            y: [0, 10, -10, 0]
+            rotate: [0, 1, -1, 0],
           }}
-          exit={{ opacity: 0, scale: 0.9 }}
+          exit={{ opacity: 0, scale: 0.95 }}
           transition={{ 
-            opacity: { duration: 2 },
-            scale: { duration: 8, ease: "linear" },
-            x: { duration: 20, repeat: Infinity, ease: "linear" },
-            y: { duration: 15, repeat: Infinity, ease: "linear" }
+            opacity: { duration: 2.5 },
+            scale: { duration: 10, ease: "linear" },
+            rotate: { duration: 20, repeat: Infinity, ease: "linear" }
           }}
           className="absolute inset-0 w-full h-full"
         >
           <img 
-            src={universeImages[index]} 
+            src={images[index]} 
             className="w-full h-full object-cover" 
             alt="Universe" 
           />
         </motion.div>
       </AnimatePresence>
-      {/* Dark overlay to make the main content pop */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80 z-1" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]" />
     </div>
   );
 };
 
-const Sparkles = () => {
-  const [particles] = useState(() => Array.from({ length: 30 }));
+const Fireflies = () => {
+  const [flies] = useState(() => Array.from({ length: 25 }));
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden z-10">
-      {particles.map((_, i) => (
+    <div className="fixed inset-0 pointer-events-none z-10 overflow-hidden">
+      {flies.map((_, i) => (
         <motion.div
           key={i}
           initial={{ 
-            x: Math.random() * window.innerWidth, 
-            y: Math.random() * window.innerHeight,
+            x: Math.random() * 100 + "%", 
+            y: Math.random() * 100 + "%",
             opacity: 0 
           }}
           animate={{
-            x: [null, Math.random() * window.innerWidth],
-            y: [null, Math.random() * window.innerHeight],
-            opacity: [0, 0.6, 0],
-            scale: [0, 1, 0],
+            x: [null, Math.random() * 100 + "%", Math.random() * 100 + "%"],
+            y: [null, Math.random() * 100 + "%", Math.random() * 100 + "%"],
+            opacity: [0, 0.7, 0.3, 0.8, 0],
+            scale: [0, 1.2, 0.8, 1, 0],
           }}
           transition={{
-            duration: 10 + Math.random() * 10,
+            duration: 8 + Math.random() * 12,
             repeat: Infinity,
             ease: "easeInOut"
           }}
-          className="absolute w-0.5 h-0.5 bg-white rounded-full blur-[0.5px]"
+          className="absolute w-1.5 h-1.5 bg-yellow-200 rounded-full blur-[1px] shadow-[0_0_10px_#fff]"
         />
       ))}
     </div>
@@ -153,150 +148,162 @@ export default function App() {
   };
 
   if (photos.length === 0) return (
-    <div className="h-screen w-screen bg-[#02040a] flex items-center justify-center">
-      <motion.div 
-        animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
-        transition={{ duration: 2, repeat: Infinity }}
-        className="text-yellow-200 text-xl tracking-[1em] font-serif uppercase"
-      >
-        Opening the Universe...
-      </motion.div>
+    <div className="h-screen w-screen bg-black flex items-center justify-center">
+      <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 2, repeat: Infinity }} className="text-white tracking-[2em] uppercase text-xs">Entering Space...</motion.div>
     </div>
   );
 
   const currentPhoto = photos[currentIndex];
 
   return (
-    <div className="h-screen w-screen bg-black text-white overflow-hidden flex flex-col font-serif select-none relative">
+    <div className="h-screen w-screen bg-black text-white overflow-hidden flex flex-col font-sans select-none relative">
       <audio ref={audioRef} src="/diary/audio/ambient.mp3" loop />
-      
-      {/* Dynamic Universe Background */}
       <UniverseBackground />
-      <Sparkles />
-      
-      {/* Main Photo Viewer - 75% HEIGHT FOCUS */}
-      <div className="relative h-[70vh] flex items-center justify-center overflow-hidden px-4 pt-10 pb-2 z-10">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentIndex}
-            initial={{ opacity: 0, scale: 0.8, filter: "blur(40px)" }}
-            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, scale: 1.2, filter: "blur(40px)" }}
-            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute w-full h-full flex items-center justify-center"
-          >
-            <div className="relative w-full h-full max-w-[95vw] flex items-center justify-center">
-              {/* Magic Glow Border */}
-              <div className="absolute -inset-4 bg-white/5 rounded-2xl blur-2xl" />
-              <img
-                src={currentPhoto.url}
-                className="relative max-w-full max-h-full object-contain rounded-xl shadow-[0_0_100px_rgba(0,0,0,0.9)] border border-white/10"
-                alt=""
-              />
-            </div>
-          </motion.div>
-        </AnimatePresence>
+      <Fireflies />
 
-        {/* Navigation Arrows */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-8 z-20 pointer-events-none">
-          <motion.button 
-            whileHover={{ scale: 1.2, x: -10 }}
-            onClick={() => paginate(-1)}
-            className={`pointer-events-auto p-5 rounded-full bg-white/5 backdrop-blur-3xl border border-white/10 shadow-2xl transition-all ${currentIndex === 0 ? 'opacity-0 scale-0' : 'opacity-100'}`}
-          >
-            <span className="text-2xl filter drop-shadow-[0_0_8px_#fff]">✨</span>
-          </motion.button>
-          <motion.button 
-            whileHover={{ scale: 1.2, x: 10 }}
-            onClick={() => paginate(1)}
-            className={`pointer-events-auto p-5 rounded-full bg-white/5 backdrop-blur-3xl border border-white/10 shadow-2xl transition-all ${currentIndex === photos.length - 1 ? 'opacity-0 scale-0' : 'opacity-100'}`}
-          >
-            <span className="text-2xl filter drop-shadow-[0_0_8px_#fff]">✨</span>
-          </motion.button>
-        </div>
-      </div>
-
-      {/* 30% Bottom Section */}
-      <div className="h-[30vh] relative z-30 w-full flex flex-col justify-end gap-4 pb-10 pt-2">
+      {/* Main Content Area */}
+      <div className="relative z-20 flex-1 flex flex-col h-full">
         
-        {/* 1. Thumbnail Strip */}
-        <div 
-          ref={thumbnailRef}
-          className="flex gap-3 overflow-x-auto no-scrollbar px-20 scroll-smooth w-full items-center h-20"
-        >
-          {photos.map((photo, i) => (
-            <motion.div
-              key={photo.id}
-              whileHover={{ scale: 1.1, y: -5 }}
-              onClick={() => {
-                setDirection(i > currentIndex ? 1 : -1);
-                setCurrentIndex(i);
-              }}
-              className={`flex-shrink-0 h-14 w-14 rounded-lg overflow-hidden cursor-pointer transition-all duration-700 ${
-                i === currentIndex 
-                  ? 'ring-2 ring-white ring-offset-4 ring-offset-black scale-125 z-10' 
-                  : 'opacity-20 grayscale hover:grayscale-0 hover:opacity-80'
-              }`}
-            >
-              <img src={photo.url} className="w-full h-full object-cover" alt="" />
-            </motion.div>
-          ))}
-        </div>
-
-        {/* 2. Magic Slider */}
-        <div className="w-full max-w-3xl mx-auto px-12 relative h-6 flex items-center">
-          <div className="absolute inset-x-12 h-[1px] bg-white/10 rounded-full" />
-          <input
-            type="range"
-            min="0"
-            max={photos.length - 1}
-            value={currentIndex}
-            onChange={handleScrub}
-            onMouseDown={() => setIsScrubbing(true)}
-            onMouseUp={() => setIsScrubbing(false)}
-            className="w-full h-full bg-transparent appearance-none cursor-pointer z-10 universe-slider"
-          />
-        </div>
-
-        {/* 3. Milestone Bar */}
-        <div className="w-full max-w-xl mx-auto flex justify-between items-center relative px-8 pb-4">
-          {milestones.map((milestone) => (
-            <motion.button
-              key={milestone.id}
-              whileHover={{ y: -3 }}
-              onClick={() => {
-                setDirection(milestone.index > currentIndex ? 1 : -1);
-                setCurrentIndex(milestone.index);
-              }}
-              className={`flex flex-col items-center gap-1 transition-all duration-1000 ${
-                currentIndex >= milestone.index ? 'opacity-100' : 'opacity-20'
-              }`}
-            >
-              <span className={`text-[10px] font-black tracking-[0.4em] uppercase transition-all ${
-                currentIndex >= milestone.index ? 'text-white shadow-glow' : 'text-white/20'
-              }`}>
-                {milestone.label}
-              </span>
-              <div className={`w-1 h-1 rounded-full transition-all duration-700 ${
-                currentIndex >= milestone.index ? 'bg-white shadow-[0_0_10px_#fff]' : 'bg-white/10'
-              }`} />
-            </motion.button>
-          ))}
-        </div>
-
-        {/* Audio Control */}
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 opacity-20 hover:opacity-100 transition-opacity">
-          <button 
-            onClick={() => {
-              if (audioRef.current) {
-                if (isPlaying) audioRef.current.pause(); else audioRef.current.play();
-                setIsPlaying(!isPlaying);
-              }
-            }}
-            className="p-2"
+        {/* Top Title */}
+        <div className="pt-8 text-center">
+          <motion.h1 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-[10px] font-bold tracking-[1.5em] uppercase text-white/40 ml-[1.5em]"
           >
-            <div className={`w-1 h-1 rounded-full ${isPlaying ? 'bg-white animate-ping' : 'bg-white/20'}`} />
-          </button>
+            Ivaan Portfolio
+          </motion.h1>
+        </div>
+
+        {/* 75% MAIN PHOTO FRAME */}
+        <div className="flex-1 flex items-center justify-center overflow-hidden px-4 py-4 relative">
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
+              key={currentIndex}
+              custom={direction}
+              initial={{ opacity: 0, scale: 0.8, x: direction * 100, filter: "blur(20px)" }}
+              animate={{ opacity: 1, scale: 1, x: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, scale: 1.2, x: -direction * 100, filter: "blur(20px)" }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute w-full h-full flex items-center justify-center p-4"
+            >
+              <div className="relative w-full h-full max-w-6xl flex items-center justify-center group">
+                <div className="absolute -inset-10 bg-white/5 rounded-full blur-[100px] opacity-20" />
+                <img
+                  src={currentPhoto.url}
+                  className="relative max-w-full max-h-full object-contain rounded-xl shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10"
+                  alt=""
+                />
+              </div>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Magical Navigation Buttons */}
+          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-10 z-30 pointer-events-none">
+            <motion.button 
+              whileHover={{ scale: 1.2, x: -10 }}
+              onClick={() => paginate(-1)}
+              className={`pointer-events-auto p-6 rounded-full bg-white/5 backdrop-blur-3xl border border-white/10 shadow-2xl transition-all ${currentIndex === 0 ? 'opacity-0' : 'opacity-100'}`}
+            >
+              <span className="text-3xl drop-shadow-[0_0_10px_white]">✨</span>
+            </motion.button>
+            <motion.button 
+              whileHover={{ scale: 1.2, x: 10 }}
+              onClick={() => paginate(1)}
+              className={`pointer-events-auto p-6 rounded-full bg-white/5 backdrop-blur-3xl border border-white/10 shadow-2xl transition-all ${currentIndex === photos.length - 1 ? 'opacity-0' : 'opacity-100'}`}
+            >
+              <span className="text-3xl drop-shadow-[0_0_10px_white]">✨</span>
+            </motion.button>
+          </div>
+        </div>
+
+        {/* 25% BOTTOM SECTION */}
+        <div className="relative z-30 w-full flex flex-col gap-6 pb-10 pt-2 bg-gradient-to-t from-black via-black/60 to-transparent">
+          
+          {/* 1. Thumbnail Strip */}
+          <div 
+            ref={thumbnailRef}
+            className="flex gap-4 overflow-x-auto no-scrollbar py-4 px-20 scroll-smooth w-full items-center h-24"
+          >
+            {photos.map((photo, i) => (
+              <motion.div
+                key={photo.id}
+                whileHover={{ scale: 1.1, y: -10 }}
+                onClick={() => {
+                  setDirection(i > currentIndex ? 1 : -1);
+                  setCurrentIndex(i);
+                }}
+                className={`flex-shrink-0 h-16 w-16 rounded-2xl overflow-hidden cursor-pointer transition-all duration-700 shadow-2xl ${
+                  i === currentIndex 
+                    ? 'ring-4 ring-white ring-offset-4 ring-offset-black scale-125 z-10' 
+                    : 'opacity-20 grayscale hover:grayscale-0 hover:opacity-100'
+                }`}
+              >
+                <img src={photo.url} className="w-full h-full object-cover" alt="" />
+              </motion.div>
+            ))}
+          </div>
+
+          {/* 2. Scrubber Slider */}
+          <div className="w-full max-w-4xl mx-auto px-12 relative h-10 flex items-center">
+            <div className="absolute inset-x-12 h-[1px] bg-white/10 rounded-full" />
+            <input
+              type="range"
+              min="0"
+              max={photos.length - 1}
+              value={currentIndex}
+              onChange={handleScrub}
+              onMouseDown={() => setIsScrubbing(true)}
+              onMouseUp={() => setIsScrubbing(false)}
+              className="w-full h-full bg-transparent appearance-none cursor-pointer z-10 universe-slider"
+            />
+          </div>
+
+          {/* 3. ORIGINAL MILESTONE ICONS (Restored) */}
+          <div className="w-full max-w-2xl mx-auto flex justify-between items-center relative px-8 py-2">
+            {milestones.map((milestone) => (
+              <motion.button
+                key={milestone.id}
+                whileHover={{ scale: 1.2, y: -5 }}
+                onClick={() => {
+                  setDirection(milestone.index > currentIndex ? 1 : -1);
+                  setCurrentIndex(milestone.index);
+                }}
+                className={`flex flex-col items-center gap-3 transition-all duration-1000 ${
+                  currentIndex >= milestone.index ? 'opacity-100' : 'opacity-20'
+                }`}
+              >
+                <div className={`p-4 rounded-full border transition-all duration-700 ${
+                  currentIndex >= milestone.index 
+                    ? 'bg-white/20 border-white shadow-[0_0_20px_white]' 
+                    : 'border-white/10'
+                }`}>
+                  <span className="text-2xl">{milestone.icon}</span>
+                </div>
+                <span className={`text-[10px] font-bold tracking-[0.3em] uppercase transition-all ${
+                  currentIndex >= milestone.index ? 'text-white shadow-glow' : 'text-white/20'
+                }`}>
+                  {milestone.label}
+                </span>
+              </motion.button>
+            ))}
+          </div>
+
+          {/* Audio Control */}
+          <div className="absolute bottom-4 left-6 opacity-30 hover:opacity-100 transition-opacity">
+            <button 
+              onClick={() => {
+                if (audioRef.current) {
+                  if (isPlaying) audioRef.current.pause(); else audioRef.current.play();
+                  setIsPlaying(!isPlaying);
+                }
+              }}
+              className="flex items-center gap-3"
+            >
+              <div className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-blue-400 animate-ping' : 'bg-white/20'}`} />
+              <span className="text-[8px] font-bold tracking-widest uppercase">Audio</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -304,22 +311,22 @@ export default function App() {
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .shadow-glow { text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        .shadow-glow { text-shadow: 0 0 15px rgba(255,255,255,0.8); }
 
         .universe-slider::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
-          width: 12px;
-          height: 12px;
+          width: 24px;
+          height: 24px;
           background: #fff;
           border-radius: 50%;
           cursor: pointer;
-          box-shadow: 0 0 15px #fff;
-          transition: transform 0.3s ease;
+          box-shadow: 0 0 20px white;
+          transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         
         .universe-slider::-webkit-slider-thumb:hover {
-          transform: scale(1.5);
+          transform: scale(1.3);
         }
       `}} />
     </div>
