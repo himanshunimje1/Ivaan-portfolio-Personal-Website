@@ -28,34 +28,30 @@ function GlassFrame({ url, index, total }) {
     const personalOffset = index / total;
     const distance = Math.abs(scrollOffset - personalOffset);
     
-    // Focus logic: Active one is giant (95% of viewport), others are smaller on the sides
+    // Focus logic: 0 when centered, 1 when far away
     const focus = 1 - Math.min(distance * 3, 1);
-    
-    // Calculate 95% of viewport size
-    const targetWidth = viewport.width * 0.95;
-    const targetHeight = viewport.height * 0.95;
     
     // Position sideways: Center the active one
     const xBase = (index - scrollOffset * total) * (viewport.width * 1.1);
-    const zTarget = focus * 5; // Move closer to camera when active
-
     meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, xBase, 0.1);
-    meshRef.current.position.z = THREE.MathUtils.lerp(meshRef.current.position.z, zTarget, 0.1);
     
-    // Adjust scale based on focus
-    const scaleFactor = 0.4 + focus * 0.6;
-    meshRef.current.scale.setScalar(THREE.MathUtils.lerp(meshRef.current.scale.x, scaleFactor, 0.1));
+    // ZOOM EFFECT:
+    // Scale the entire mesh (the "frame")
+    const frameScale = 0.8 + focus * 0.2; // From 80% to 100% of viewport size
+    meshRef.current.scale.setScalar(THREE.MathUtils.lerp(meshRef.current.scale.x, frameScale, 0.1));
     
-    // Glassy floating drift
+    // SUBTLE MOTION ZOOM:
+    // We can also animate the texture scale for a "Ken Burns" effect
     const time = state.clock.getElapsedTime();
-    meshRef.current.position.y = Math.sin(time * 0.3 + index) * 0.1;
+    const pulse = Math.sin(time * 0.5) * 0.05;
+    meshRef.current.children[1].scale.setScalar(1 + pulse + focus * 0.1);
   });
 
   return (
     <group ref={meshRef}>
       {/* Glass Backplate (Apple style) */}
       <mesh position={[0, 0, -0.05]}>
-        <planeGeometry args={[viewport.width * 0.96, viewport.height * 0.96]} />
+        <planeGeometry args={[viewport.width * 0.95, viewport.height * 0.95]} />
         <meshStandardMaterial 
           color="#ffffff" 
           transparent 
@@ -65,7 +61,7 @@ function GlassFrame({ url, index, total }) {
         />
       </mesh>
 
-      {/* The Photo (Takes 95% of screen when focused) */}
+      {/* The Photo (Zoomable child) */}
       <mesh>
         <planeGeometry args={[viewport.width * 0.95, viewport.height * 0.95]} />
         <meshBasicMaterial map={texture} side={THREE.DoubleSide} />
@@ -74,7 +70,7 @@ function GlassFrame({ url, index, total }) {
       {/* Thin Light Border */}
       <mesh position={[0, 0, 0.01]}>
         <planeGeometry args={[viewport.width * 0.952, viewport.height * 0.952]} />
-        <meshBasicMaterial color="white" transparent opacity={0.02} wireframe />
+        <meshBasicMaterial color="white" transparent opacity={0.05} wireframe />
       </mesh>
     </group>
   );
@@ -87,7 +83,6 @@ function Scene() {
       <ambientLight intensity={1.5} />
       <pointLight position={[10, 10, 10]} intensity={3} />
       
-      {/* Increased pages to make the horizontal scroll feel more substantial */}
       <ScrollControls pages={photos.length} damping={0.3} horizontal>
         <Scroll>
           {photos.map((photo, i) => (
@@ -136,7 +131,7 @@ export default function App() {
       {!isPlaying && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
           <div className="text-white/10 text-[10px] uppercase tracking-[2.5em] animate-pulse">
-            Scroll Sideways
+            Explore the Story
           </div>
         </div>
       )}
