@@ -219,7 +219,7 @@ export default function App() {
               }}
               className="flex items-center gap-3"
             >
-              <div className={`w-2 h-2 rounded-full transition-all duration-500 ${isPlaying ? 'bg-blue-400 shadow-[0_0_10px_cyan]' : 'bg-white/10'}`} />
+              <div className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${isPlaying ? 'bg-blue-400 shadow-[0_0_10px_cyan]' : 'bg-white/10'}`} />
               <span className={`text-[9px] font-bold tracking-[0.2em] uppercase transition-colors ${isPlaying ? 'text-white' : 'text-white/20'}`}>
                 Audio
               </span>
@@ -257,14 +257,6 @@ export default function App() {
           cursor: pointer;
           box-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
-      `}} />
-    </div>
-  );
-}
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}} />
     </div>
   );
