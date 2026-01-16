@@ -8,19 +8,6 @@ import {
 } from '@react-three/drei';
 import * as THREE from 'three';
 
-const photos = [
-  { id: 1, url: '/diary/17C0D3CC-FE7D-40A7-938E-BE5C402A1696.jpg' },
-  { id: 2, url: '/diary/IMG_7070.JPG' },
-  { id: 3, url: '/diary/IMG_7071.JPG' },
-  { id: 4, url: '/diary/IMG_7072.JPG' },
-  { id: 5, url: '/diary/IMG_8667.jpg' },
-  { id: 6, url: '/diary/17C0D3CC-FE7D-40A7-938E-BE5C402A1696.jpg' },
-  { id: 7, url: '/diary/IMG_7070.JPG' },
-  { id: 8, url: '/diary/IMG_7071.JPG' },
-  { id: 9, url: '/diary/IMG_7072.JPG' },
-  { id: 10, url: '/diary/IMG_8667.jpg' },
-];
-
 function CarouselFrame({ url, index, total }) {
   const meshRef = useRef();
   const texture = useTexture(url);
@@ -30,37 +17,24 @@ function CarouselFrame({ url, index, total }) {
   useFrame((state) => {
     if (!meshRef.current) return;
     const scrollOffset = scroll.offset;
-    
-    // Each photo takes up a slot in the scroll
     const personalOffset = index / total;
     let distance = scrollOffset - personalOffset;
     
-    // Circular logic
     if (distance > 0.5) distance -= 1;
     if (distance < -0.5) distance += 1;
 
-    // RADIUS: Smaller radius brings frames closer to the middle
     const radius = viewport.width * 0.8; 
-    
-    // Angle logic
     const angle = distance * Math.PI * 2;
     
-    // Position on a circle
     const targetX = Math.sin(angle) * radius;
     const targetZ = Math.cos(angle) * radius - radius; 
 
-    // Smooth movement
     meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, targetX, 0.1);
     meshRef.current.position.z = THREE.MathUtils.lerp(meshRef.current.position.z, targetZ, 0.1);
-    
-    // Face the camera
     meshRef.current.rotation.y = THREE.MathUtils.lerp(meshRef.current.rotation.y, angle, 0.1);
 
-    // VISIBILITY: Only show the front-side (distance < 0.25)
-    // We'll fade them out as they move to the back
-    const visibility = 1 - Math.min(Math.abs(distance) * 5, 1);
+    const visibility = Math.max(0, 1 - Math.abs(distance) * 5);
     
-    // Apply opacity to both the photo and the glass frame
     meshRef.current.children.forEach(child => {
       if (child.material) {
         child.material.opacity = THREE.MathUtils.lerp(child.material.opacity, visibility, 0.1);
@@ -68,7 +42,6 @@ function CarouselFrame({ url, index, total }) {
       }
     });
 
-    // Scale logic: 70% width
     const focus = 1 - Math.min(Math.abs(distance) * 4, 1);
     const targetScale = 0.7 + focus * 0.3; 
     meshRef.current.scale.setScalar(THREE.MathUtils.lerp(meshRef.current.scale.x, targetScale, 0.1));
@@ -76,25 +49,14 @@ function CarouselFrame({ url, index, total }) {
 
   return (
     <group ref={meshRef}>
-      {/* Glass Backplate */}
       <mesh position={[0, 0, -0.05]}>
         <planeGeometry args={[viewport.width * 0.7, viewport.height * 0.8]} />
-        <meshStandardMaterial 
-          color="#ffffff" 
-          transparent 
-          opacity={0.05} 
-          roughness={0.1} 
-          metalness={0.9}
-        />
+        <meshStandardMaterial color="#ffffff" transparent opacity={0.05} roughness={0.1} metalness={0.9} />
       </mesh>
-
-      {/* The Photo */}
       <mesh>
         <planeGeometry args={[viewport.width * 0.7, viewport.height * 0.8]} />
         <meshBasicMaterial map={texture} side={THREE.DoubleSide} transparent />
       </mesh>
-
-      {/* Frame Border */}
       <mesh position={[0, 0, 0.01]}>
         <planeGeometry args={[viewport.width * 0.702, viewport.height * 0.802]} />
         <meshBasicMaterial color="white" transparent opacity={0.05} wireframe />
@@ -103,22 +65,18 @@ function CarouselFrame({ url, index, total }) {
   );
 }
 
-function Scene() {
+function Scene({ photos }) {
   return (
     <>
       <color attach="background" args={['#000000']} />
-      <ambientLight intensity={1.5} />
-      <pointLight position={[10, 10, 10]} intensity={3} />
+      <ambientLight intensity={2} />
+      <pointLight position={[10, 10, 10]} intensity={5} />
       
-      <ScrollControls pages={photos.length} damping={0.3}>
+      <ScrollControls pages={photos.length} damping={0.4}>
         <Scroll>
           {photos.map((photo, i) => (
-            <Suspense key={photo.id + '-' + i} fallback={null}>
-              <CarouselFrame 
-                url={photo.url} 
-                index={i} 
-                total={photos.length} 
-              />
+            <Suspense key={photo.url} fallback={null}>
+              <CarouselFrame url={photo.url} index={i} total={photos.length} />
             </Suspense>
           ))}
         </Scroll>
@@ -128,10 +86,17 @@ function Scene() {
 }
 
 export default function App() {
+  const [photos, setPhotos] = useState([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef(null);
 
   useEffect(() => {
+    // Fetch the dynamic manifest
+    fetch('/diary/manifest.json')
+      .then(res => res.json())
+      .then(data => setPhotos(data))
+      .catch(err => console.error('Error loading manifest:', err));
+
     const play = () => {
       if (audioRef.current) {
         audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
@@ -147,23 +112,21 @@ export default function App() {
     };
   }, []);
 
+  if (photos.length === 0) return <div className="h-screen w-screen bg-black flex items-center justify-center text-white/20 uppercase tracking-[2em] animate-pulse">Loading...</div>;
+
   return (
     <div className="h-screen w-screen bg-black relative">
       <audio ref={audioRef} src="/diary/audio/ambient.mp3" loop />
-      
-      <Canvas camera={{ position: [0, 0, 8], fov: 45 }}>
-        <Scene />
+      <Canvas camera={{ position: [0, 0, 10], fov: 40 }}>
+        <Scene photos={photos} />
       </Canvas>
 
       {!isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-          <div className="text-white/10 text-[10px] uppercase tracking-[2.5em] animate-pulse">
-            Scroll to Navigate
-          </div>
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+          <div className="text-white/20 text-[10px] uppercase tracking-[3em] animate-pulse">Explore</div>
         </div>
       )}
 
-      {/* Audio Button */}
       <div className="absolute bottom-10 right-10 z-20">
         <button 
           onClick={() => {
