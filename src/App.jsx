@@ -14,40 +14,38 @@ function PhotoFrame({ url, index, total }) {
   const scroll = useScroll();
   const { viewport } = useThree();
 
-  // Calculate the appropriate aspect ratio for the frame to avoid stretching
+  // Calculate the appropriate aspect ratio to avoid stretching
   const imageAspect = texture.image.width / texture.image.height;
   const viewportAspect = viewport.width / viewport.height;
   
-  // Base dimensions - we want the photo to fit nicely in the screen
   let width, height;
   if (imageAspect > viewportAspect) {
-    // Landscape photo
-    width = viewport.width * 0.8;
+    width = viewport.width * 0.85;
     height = width / imageAspect;
   } else {
-    // Portrait photo
-    height = viewport.height * 0.8;
+    height = viewport.height * 0.85;
     width = height * imageAspect;
   }
 
   useFrame(() => {
     if (!meshRef.current) return;
-    const scrollOffset = scroll.offset;
-    const personalOffset = index / total;
-    const distance = scrollOffset - personalOffset;
     
-    // Smooth horizontal transition
-    // One picture at a time: current photo is at x=0
-    const targetX = -distance * viewport.width * 2;
-    meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, targetX, 0.15);
+    // Normalize scroll progress (0 to total-1)
+    const scrollProgress = scroll.offset * (total - 1);
+    const distance = scrollProgress - index;
     
-    // Opacity logic: sharpen the fade so they don't overlap as much
-    const opacity = Math.max(0, 1 - Math.abs(distance) * 15);
+    // POSITION: Space them out by exactly one viewport width
+    // This ensures only the current and next/prev are visible during transition
+    const targetX = -distance * viewport.width;
+    meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, targetX, 0.1);
+    
+    // OPACITY: Only show the two photos involved in the current transition
+    const opacity = Math.max(0, 1 - Math.abs(distance));
     meshRef.current.material.opacity = THREE.MathUtils.lerp(meshRef.current.material.opacity, opacity, 0.15);
     meshRef.current.material.transparent = true;
     
-    // Subtle scale: slightly smaller when not active
-    const scale = 0.9 + opacity * 0.1;
+    // Subtle scale for depth
+    const scale = 0.95 + opacity * 0.05;
     meshRef.current.scale.setScalar(scale);
   });
 
@@ -103,11 +101,7 @@ export default function App() {
     };
   }, []);
 
-  if (photos.length === 0) return (
-    <div className="h-screen w-screen bg-black flex items-center justify-center text-white/20 uppercase tracking-[2em] animate-pulse">
-      Loading...
-    </div>
-  );
+  if (photos.length === 0) return null;
 
   return (
     <div className="h-screen w-screen bg-black relative">
@@ -118,7 +112,7 @@ export default function App() {
 
       {!isPlaying && (
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
-          <div className="text-white/20 text-[10px] uppercase tracking-[3em] animate-pulse">Ivaan Portfolio</div>
+          <div className="text-white/10 text-[10px] uppercase tracking-[3em] animate-pulse">Ivaan Portfolio</div>
         </div>
       )}
 
