@@ -38,12 +38,12 @@ function PhotoFrame({ url, index, total }) {
     
     // Smooth horizontal transition
     // One picture at a time: current photo is at x=0
-    const targetX = -distance * viewport.width * 1.2;
-    meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, targetX, 0.1);
+    const targetX = -distance * viewport.width * 2;
+    meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, targetX, 0.15);
     
-    // Opacity logic: only show the main one clearly
-    const opacity = Math.max(0, 1 - Math.abs(distance) * 5);
-    meshRef.current.material.opacity = THREE.MathUtils.lerp(meshRef.current.material.opacity, opacity, 0.1);
+    // Opacity logic: sharpen the fade so they don't overlap as much
+    const opacity = Math.max(0, 1 - Math.abs(distance) * 15);
+    meshRef.current.material.opacity = THREE.MathUtils.lerp(meshRef.current.material.opacity, opacity, 0.15);
     meshRef.current.material.transparent = true;
     
     // Subtle scale: slightly smaller when not active
