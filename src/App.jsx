@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion';
 
 const milestones = [
   { id: 'birth', icon: '✨', label: 'Magic Begins', index: 0 },
@@ -141,6 +141,15 @@ export default function App() {
   const [isScrubbing, setIsScrubbing] = useState(false);
   const audioRef = useRef(null);
   const thumbnailRef = useRef(null);
+  const containerRef = useRef(null);
+  const sectionRefs = useRef([]);
+
+  // DeSo-style scroll tracking
+  const { scrollYProgress } = useScroll({
+    container: containerRef,
+    layoutEffect: false
+  });
+  const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
 
   useEffect(() => {
     fetch('/diary/manifest.json')
@@ -156,6 +165,33 @@ export default function App() {
     window.addEventListener('click', play, { once: true });
     return () => window.removeEventListener('click', play);
   }, []);
+
+  // Scroll-based photo navigation
+  useEffect(() => {
+    if (photos.length === 0) return;
+    
+    const handleScroll = () => {
+      if (isScrubbing) return;
+      
+      const scrollPos = containerRef.current?.scrollTop || 0;
+      const sectionHeight = containerRef.current?.scrollHeight / photos.length || 0;
+      const newIndex = Math.min(
+        Math.floor(scrollPos / sectionHeight),
+        photos.length - 1
+      );
+      
+      if (newIndex !== currentIndex && newIndex >= 0) {
+        setDirection(newIndex > currentIndex ? 1 : -1);
+        setCurrentIndex(newIndex);
+      }
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll, { passive: true });
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, [photos.length, currentIndex, isScrubbing]);
 
   useEffect(() => {
     if (thumbnailRef.current && !isScrubbing) {
@@ -175,6 +211,10 @@ export default function App() {
     if (nextIndex >= 0 && nextIndex < photos.length) {
       setDirection(newDirection);
       setCurrentIndex(nextIndex);
+      // Smooth scroll to section
+      if (sectionRefs.current[nextIndex]) {
+        sectionRefs.current[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   };
 
@@ -192,8 +232,14 @@ export default function App() {
     if (newIndex !== currentIndex) {
       setDirection(newIndex > currentIndex ? 1 : -1);
       setCurrentIndex(newIndex);
+      if (sectionRefs.current[newIndex]) {
+        sectionRefs.current[newIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   };
+
+  // Scroll progress indicator
+  const scrollProgressWidth = useTransform(smoothProgress, [0, 1], ['0%', '100%']);
 
   if (photos.length === 0) return (
     <div className="h-screen w-screen bg-black flex items-center justify-center">
@@ -204,71 +250,149 @@ export default function App() {
   const currentPhoto = photos[currentIndex];
 
   return (
-    <div className="h-screen w-screen bg-black text-white overflow-hidden flex flex-col font-sans select-none relative">
+    <div className="h-screen w-screen bg-black text-white overflow-hidden font-sans select-none relative">
       <audio ref={audioRef} src="/diary/audio/ambient.mp3" loop />
       <UniverseBackground />
       <Fireflies />
 
-      {/* Main Content Area */}
-      <div className="relative z-20 flex-1 flex flex-col h-full">
-        
-        {/* Top Title */}
-        <div className="pt-8 text-center">
-          <motion.h1 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-[10px] font-bold tracking-[1.5em] uppercase text-white/40 ml-[1.5em]"
-          >
-            Ivaan Portfolio
-          </motion.h1>
+      {/* Scroll Progress Bar (DeSo-style) */}
+      <div className="fixed top-0 left-0 right-0 h-1 bg-white/10 z-50">
+        <motion.div 
+          className="h-full bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400"
+          style={{ width: scrollProgressWidth }}
+        />
+      </div>
+
+      {/* Top Title - Sticky */}
+      <motion.div 
+        className="fixed top-8 left-0 right-0 z-40 text-center pointer-events-none"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <h1 className="text-[10px] font-bold tracking-[1.5em] uppercase text-white/40 ml-[1.5em]">
+          Ivaan Portfolio
+        </h1>
+      </motion.div>
+
+      {/* Scrollable Container */}
+      <div 
+        ref={containerRef}
+        className="h-full w-full overflow-y-auto overflow-x-hidden scroll-smooth"
+        style={{ scrollBehavior: 'smooth' }}
+      >
+        {/* Photo Sections - DeSo-style sticky reveals */}
+        <div className="relative">
+          {photos.map((photo, i) => {
+            const isActive = i === currentIndex;
+            const milestone = milestones.find(m => m.index === i);
+            
+            return (
+              <motion.section
+                key={photo.id}
+                ref={(el) => (sectionRefs.current[i] = el)}
+                className="h-screen w-full flex items-center justify-center relative"
+                style={{ perspective: '700px' }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {/* Sticky Photo Container */}
+                <div className="sticky top-0 h-screen w-full flex items-center justify-center px-4 py-4">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8, y: 50, rotateX: -15 }}
+                    animate={{ 
+                      opacity: isActive ? 1 : 0.3,
+                      scale: isActive ? 1 : 0.9,
+                      y: isActive ? 0 : 30,
+                      rotateX: isActive ? 0 : -10
+                    }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                    className="relative w-full h-full max-w-6xl flex items-center justify-center group"
+                    style={{ willChange: 'transform, opacity' }}
+                  >
+                    {/* Glow Effect */}
+                    <motion.div 
+                      className="absolute -inset-10 bg-white/5 rounded-full blur-[100px]"
+                      animate={{ 
+                        opacity: isActive ? 0.3 : 0.1,
+                        scale: isActive ? 1.2 : 0.8
+                      }}
+                      transition={{ duration: 0.6 }}
+                    />
+                    
+                    {/* Photo */}
+                    <motion.img
+                      src={photo.url}
+                      className="relative max-w-full max-h-[75vh] object-contain rounded-xl shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10"
+                      alt=""
+                      style={{ 
+                        filter: isActive ? 'blur(0px)' : 'blur(2px)',
+                        willChange: 'filter, transform'
+                      }}
+                    />
+
+                    {/* Milestone Label - DeSo-style reveal */}
+                    {milestone && (
+                      <motion.div
+                        className="absolute left-8 top-1/2 -translate-y-1/2 flex items-center gap-4"
+                        initial={{ opacity: 0, x: -50 }}
+                        animate={{ 
+                          opacity: isActive ? 1 : 0.3,
+                          x: isActive ? 0 : -30
+                        }}
+                        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                      >
+                        <motion.div
+                          className="h-[2px] bg-gradient-to-r from-yellow-400 to-transparent"
+                          initial={{ scaleX: 0 }}
+                          animate={{ scaleX: isActive ? 1 : 0 }}
+                          transition={{ duration: 0.6, delay: 0.2 }}
+                          style={{ width: '80px' }}
+                        />
+                        <div className="flex flex-col gap-2">
+                          <span className="text-yellow-400 text-xs font-bold tracking-widest uppercase">
+                            {milestone.label}
+                          </span>
+                          <span className="text-2xl">{milestone.icon}</span>
+                        </div>
+                      </motion.div>
+                    )}
+                  </motion.div>
+                </div>
+              </motion.section>
+            );
+          })}
         </div>
+      </div>
 
-        {/* 75% MAIN PHOTO FRAME */}
-        <div className="flex-1 flex items-center justify-center overflow-hidden px-4 py-4 relative">
-          <AnimatePresence mode="wait" custom={direction}>
-            <motion.div
-              key={currentIndex}
-              custom={direction}
-              initial={{ opacity: 0, scale: 0.8, x: direction * 100, filter: "blur(20px)" }}
-              animate={{ opacity: 1, scale: 1, x: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, scale: 1.2, x: -direction * 100, filter: "blur(20px)" }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute w-full h-full flex items-center justify-center p-4"
-            >
-              <div className="relative w-full h-full max-w-6xl flex items-center justify-center group">
-                <div className="absolute -inset-10 bg-white/5 rounded-full blur-[100px] opacity-20" />
-                <img
-                  src={currentPhoto.url}
-                  className="relative max-w-full max-h-full object-contain rounded-xl shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10"
-                  alt=""
-                />
-              </div>
-            </motion.div>
-          </AnimatePresence>
+      {/* Navigation Buttons - Fixed */}
+      <div className="fixed inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-10 z-30 pointer-events-none">
+        <motion.button 
+          whileHover={{ scale: 1.2, x: -10 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => paginate(-1)}
+          className={`pointer-events-auto p-6 rounded-full bg-white/5 backdrop-blur-3xl border border-white/10 shadow-2xl transition-all ${currentIndex === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+          style={{ transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
+        >
+          <span className="text-3xl drop-shadow-[0_0_10px_white]">✨</span>
+        </motion.button>
+        <motion.button 
+          whileHover={{ scale: 1.2, x: 10 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => paginate(1)}
+          className={`pointer-events-auto p-6 rounded-full bg-white/5 backdrop-blur-3xl border border-white/10 shadow-2xl transition-all ${currentIndex === photos.length - 1 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+          style={{ transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
+        >
+          <span className="text-3xl drop-shadow-[0_0_10px_white]">✨</span>
+        </motion.button>
+      </div>
 
-          {/* Magical Navigation Buttons */}
-          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-10 z-30 pointer-events-none">
-            <motion.button 
-              whileHover={{ scale: 1.2, x: -10 }}
-              onClick={() => paginate(-1)}
-              className={`pointer-events-auto p-6 rounded-full bg-white/5 backdrop-blur-3xl border border-white/10 shadow-2xl transition-all ${currentIndex === 0 ? 'opacity-0' : 'opacity-100'}`}
-            >
-              <span className="text-3xl drop-shadow-[0_0_10px_white]">✨</span>
-            </motion.button>
-            <motion.button 
-              whileHover={{ scale: 1.2, x: 10 }}
-              onClick={() => paginate(1)}
-              className={`pointer-events-auto p-6 rounded-full bg-white/5 backdrop-blur-3xl border border-white/10 shadow-2xl transition-all ${currentIndex === photos.length - 1 ? 'opacity-0' : 'opacity-100'}`}
-            >
-              <span className="text-3xl drop-shadow-[0_0_10px_white]">✨</span>
-            </motion.button>
-          </div>
-        </div>
-
-        {/* 25% BOTTOM SECTION */}
-        <div className="relative z-30 w-full flex flex-col gap-6 pb-10 pt-2 bg-gradient-to-t from-black via-black/60 to-transparent">
-          
-          {/* 1. Thumbnail Strip */}
+      {/* Bottom UI - Fixed */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 flex flex-col gap-6 pb-10 pt-2 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none">
+        <div className="pointer-events-auto">
+          {/* Thumbnail Strip */}
           <div 
             ref={thumbnailRef}
             className="flex gap-4 overflow-x-auto no-scrollbar py-4 px-20 scroll-smooth w-full items-center h-24"
@@ -277,22 +401,27 @@ export default function App() {
               <motion.div
                 key={photo.id}
                 whileHover={{ scale: 1.1, y: -10 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => {
                   setDirection(i > currentIndex ? 1 : -1);
                   setCurrentIndex(i);
+                  if (sectionRefs.current[i]) {
+                    sectionRefs.current[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
                 }}
                 className={`flex-shrink-0 h-16 w-16 rounded-2xl overflow-hidden cursor-pointer transition-all duration-700 shadow-2xl ${
                   i === currentIndex 
-                    ? 'ring-4 ring-white ring-offset-4 ring-offset-black scale-125 z-10' 
+                    ? 'ring-4 ring-yellow-400 ring-offset-4 ring-offset-black scale-125 z-10' 
                     : 'opacity-20 grayscale hover:grayscale-0 hover:opacity-100'
                 }`}
+                style={{ transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)' }}
               >
                 <img src={photo.url} className="w-full h-full object-cover" alt="" />
               </motion.div>
             ))}
           </div>
 
-          {/* 2. Scrubber Slider */}
+          {/* Scrubber Slider */}
           <div className="w-full max-w-4xl mx-auto px-12 relative h-10 flex items-center">
             <div className="absolute inset-x-12 h-[1px] bg-white/10 rounded-full" />
             <input
@@ -307,51 +436,62 @@ export default function App() {
             />
           </div>
 
-          {/* 3. ORIGINAL MILESTONE ICONS (Restored) */}
+          {/* Milestone Icons */}
           <div className="w-full max-w-2xl mx-auto flex justify-between items-center relative px-8 py-2">
             {milestones.map((milestone) => (
               <motion.button
                 key={milestone.id}
                 whileHover={{ scale: 1.2, y: -5 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={() => {
                   setDirection(milestone.index > currentIndex ? 1 : -1);
                   setCurrentIndex(milestone.index);
+                  if (sectionRefs.current[milestone.index]) {
+                    sectionRefs.current[milestone.index].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
                 }}
                 className={`flex flex-col items-center gap-3 transition-all duration-1000 ${
                   currentIndex >= milestone.index ? 'opacity-100' : 'opacity-20'
                 }`}
+                style={{ transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)' }}
               >
-                <div className={`p-4 rounded-full border transition-all duration-700 ${
-                  currentIndex >= milestone.index 
-                    ? 'bg-white/20 border-white shadow-[0_0_20px_white]' 
-                    : 'border-white/10'
-                }`}>
+                <motion.div 
+                  className={`p-4 rounded-full border transition-all duration-700 ${
+                    currentIndex >= milestone.index 
+                      ? 'bg-yellow-400/20 border-yellow-400 shadow-[0_0_20px_rgba(255,218,89,0.5)]' 
+                      : 'border-white/10'
+                  }`}
+                  animate={{
+                    scale: currentIndex >= milestone.index ? [1, 1.1, 1] : 1
+                  }}
+                  transition={{ duration: 2, repeat: currentIndex >= milestone.index ? Infinity : 0 }}
+                >
                   <span className="text-2xl">{milestone.icon}</span>
-                </div>
+                </motion.div>
                 <span className={`text-[10px] font-bold tracking-[0.3em] uppercase transition-all ${
-                  currentIndex >= milestone.index ? 'text-white shadow-glow' : 'text-white/20'
+                  currentIndex >= milestone.index ? 'text-yellow-400 shadow-glow' : 'text-white/20'
                 }`}>
                   {milestone.label}
                 </span>
               </motion.button>
             ))}
           </div>
+        </div>
 
-          {/* Audio Control */}
-          <div className="absolute bottom-4 left-6 opacity-30 hover:opacity-100 transition-opacity">
-            <button 
-              onClick={() => {
-                if (audioRef.current) {
-                  if (isPlaying) audioRef.current.pause(); else audioRef.current.play();
-                  setIsPlaying(!isPlaying);
-                }
-              }}
-              className="flex items-center gap-3"
-            >
-              <div className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-blue-400 animate-ping' : 'bg-white/20'}`} />
-              <span className="text-[8px] font-bold tracking-widest uppercase">Audio</span>
-            </button>
-          </div>
+        {/* Audio Control */}
+        <div className="absolute bottom-4 left-6 opacity-30 hover:opacity-100 transition-opacity pointer-events-auto">
+          <button 
+            onClick={() => {
+              if (audioRef.current) {
+                if (isPlaying) audioRef.current.pause(); else audioRef.current.play();
+                setIsPlaying(!isPlaying);
+              }
+            }}
+            className="flex items-center gap-3"
+          >
+            <div className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-yellow-400 animate-ping' : 'bg-white/20'}`} />
+            <span className="text-[8px] font-bold tracking-widest uppercase">Audio</span>
+          </button>
         </div>
       </div>
 
@@ -359,22 +499,23 @@ export default function App() {
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .shadow-glow { text-shadow: 0 0 15px rgba(255,255,255,0.8); }
+        .shadow-glow { text-shadow: 0 0 15px rgba(255,218,89,0.8); }
 
         .universe-slider::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
           width: 24px;
           height: 24px;
-          background: #fff;
+          background: #FFDA59;
           border-radius: 50%;
           cursor: pointer;
-          box-shadow: 0 0 20px white;
-          transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+          box-shadow: 0 0 20px rgba(255,218,89,0.6);
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
         
         .universe-slider::-webkit-slider-thumb:hover {
           transform: scale(1.3);
+          box-shadow: 0 0 30px rgba(255,218,89,0.8);
         }
       `}} />
     </div>
