@@ -1,132 +1,154 @@
-import { useMemo, useState } from 'react'
-import { motion } from 'framer-motion'
-import { timeline } from './data/timeline'
+import React, { Suspense, useRef, useState, useEffect, useMemo } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { 
+  useTexture, 
+  ScrollControls, 
+  Scroll, 
+  useScroll, 
+} from '@react-three/drei';
+import * as THREE from 'three';
 
-const formatTitle = (title) => title.replace(/month/i, 'Month')
+const photos = [
+  { id: 1, url: '/diary/17C0D3CC-FE7D-40A7-938E-BE5C402A1696.jpg' },
+  { id: 2, url: '/diary/IMG_7070.JPG' },
+  { id: 3, url: '/diary/IMG_7071.JPG' },
+  { id: 4, url: '/diary/IMG_7072.JPG' },
+  { id: 5, url: '/diary/IMG_8667.jpg' },
+];
 
-function EventCard({ event, isActive, onClick }) {
+function GlassFrame({ url, index, total, randomPos }) {
+  const meshRef = useRef();
+  const texture = useTexture(url);
+  const scroll = useScroll();
+  const { viewport } = useThree();
+
+  useFrame((state) => {
+    if (!meshRef.current) return;
+    const scrollOffset = scroll.offset;
+    const personalOffset = index / total;
+    const distance = Math.abs(scrollOffset - personalOffset);
+    
+    // Focus logic: Active one grows and comes forward
+    const focus = 1 - Math.min(distance * 3, 1);
+    const scaleTarget = 0.5 + focus * 2.5;
+    const zTarget = randomPos.z + focus * 8;
+
+    meshRef.current.scale.setScalar(THREE.MathUtils.lerp(meshRef.current.scale.x, scaleTarget, 0.1));
+    meshRef.current.position.z = THREE.MathUtils.lerp(meshRef.current.position.z, zTarget, 0.1);
+    
+    // Floating movement
+    const time = state.clock.getElapsedTime();
+    meshRef.current.position.y = randomPos.y + Math.sin(time * 0.5 + index) * 0.2;
+  });
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex w-full items-center justify-between rounded-2xl border px-4 py-4 text-left transition ${
-        isActive
-          ? 'border-white/40 bg-white/10 text-white'
-          : 'border-white/10 bg-white/5 text-white/60 hover:border-white/30 hover:text-white'
-      }`}
-    >
-      <div>
-        <p className="text-[0.65rem] uppercase tracking-[0.4em] text-white/40">
-          {event.range}
-        </p>
-        <p className="mt-2 text-lg font-semibold">{formatTitle(event.title)}</p>
-      </div>
-      <div className="text-xs uppercase tracking-[0.3em] text-white/40">
-        {event.photos.length} photos
-      </div>
-    </button>
-  )
+    <group position={[randomPos.x, randomPos.y, randomPos.z]} ref={meshRef}>
+      {/* Glass Backplate */}
+      <mesh position={[0, 0, -0.05]}>
+        <planeGeometry args={[3.2, 4.2]} />
+        <meshStandardMaterial 
+          color="#ffffff" 
+          transparent 
+          opacity={0.1} 
+          roughness={0} 
+          metalness={1}
+        />
+      </mesh>
+
+      {/* The Photo */}
+      <mesh>
+        <planeGeometry args={[3, 4]} />
+        <meshBasicMaterial map={texture} side={THREE.DoubleSide} />
+      </mesh>
+    </group>
+  );
 }
 
-function App() {
-  const [activeEventId, setActiveEventId] = useState(timeline[0]?.id ?? '')
-  const activeEvent = useMemo(
-    () => timeline.find((event) => event.id === activeEventId) ?? timeline[0],
-    [activeEventId],
-  )
+function Scene() {
+  const { viewport } = useThree();
+  
+  const frames = useMemo(() => photos.map((p, i) => ({
+    ...p,
+    pos: {
+      x: (Math.random() - 0.5) * 15,
+      y: (Math.random() - 0.5) * 10,
+      z: -Math.random() * 20
+    }
+  })), []);
 
   return (
-    <div className="min-h-screen bg-[#0b0d12] text-white">
-      <header className="sticky top-0 z-20 border-b border-white/5 bg-[#0b0d12]/90 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6">
-          <div className="text-[0.65rem] uppercase tracking-[0.5em] text-white/60">
-            Ivaan Nimje
-          </div>
-          <div className="flex items-center gap-8 text-[0.65rem] uppercase tracking-[0.4em] text-white/50">
-            <span className="transition hover:text-white">Gallery</span>
-            <span className="transition hover:text-white">Timeline</span>
-            <span className="transition hover:text-white">About</span>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 pb-24 pt-16">
-        <div className="space-y-6">
-          <p className="text-[0.65rem] uppercase tracking-[0.55em] text-white/60">
-            Picasso-inspired gallery
-          </p>
-          <h1 className="text-4xl font-semibold leading-tight md:text-6xl">
-            Choose a moment to explore
-          </h1>
-          <p className="max-w-2xl text-base text-white/70 md:text-lg">
-            Select a milestone to reveal a curated set of photos. Birth, monthly
-            memories, and yearly highlights live in one place.
-          </p>
-        </div>
-
-        <section className="grid gap-8 lg:grid-cols-[320px_minmax(0,1fr)]">
-          <div className="space-y-4">
-            {timeline.map((event) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                isActive={event.id === activeEventId}
-                onClick={() => setActiveEventId(event.id)}
+    <>
+      <color attach="background" args={['#000000']} />
+      <ambientLight intensity={2} />
+      <pointLight position={[10, 10, 10]} intensity={5} />
+      
+      <ScrollControls pages={5} damping={0.2}>
+        <Scroll>
+          {frames.map((frame, i) => (
+            <Suspense key={frame.id} fallback={null}>
+              <GlassFrame 
+                {...frame} 
+                index={i} 
+                total={frames.length} 
+                randomPos={frame.pos} 
               />
-            ))}
-          </div>
-
-          <motion.div
-            key={activeEvent?.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
-            className="space-y-6"
-          >
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p className="text-[0.65rem] uppercase tracking-[0.45em] text-white/40">
-                  {activeEvent?.range}
-                </p>
-                <h2 className="mt-3 text-3xl font-semibold md:text-4xl">
-                  {activeEvent?.title}
-                </h2>
-              </div>
-              <div className="text-xs uppercase tracking-[0.3em] text-white/40">
-                {activeEvent?.photos.length ?? 0} photos
-              </div>
-            </div>
-
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {activeEvent?.photos.map((photo) => (
-                <div
-                  key={photo.id}
-                  className="group overflow-hidden rounded-3xl border border-white/10 bg-white/5"
-                >
-                  <div
-                    className="h-56 w-full bg-cover bg-center transition duration-500 group-hover:scale-105"
-                    style={{
-                      background: photo.imageUrl ? `url(${photo.imageUrl})` : photo.color,
-                    }}
-                  />
-                  <div className="p-4">
-                    <h3 className="text-lg font-semibold">{photo.title}</h3>
-                    <p className="mt-2 text-xs uppercase tracking-[0.3em] text-white/40">
-                      {activeEvent?.title}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/60">
-              Add photos inside <span className="text-white/80">/diary/chapters/{activeEvent?.folder}</span>
-            </div>
-          </motion.div>
-        </section>
-      </main>
-    </div>
-  )
+            </Suspense>
+          ))}
+        </Scroll>
+      </ScrollControls>
+    </>
+  );
 }
 
-export default App
+export default function App() {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    const play = () => {
+      if (audioRef.current) {
+        audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+      }
+    };
+    window.addEventListener('click', play, { once: true });
+    window.addEventListener('scroll', play, { once: true });
+    return () => {
+      window.removeEventListener('click', play);
+      window.removeEventListener('scroll', play);
+    };
+  }, []);
+
+  return (
+    <div className="h-screen w-screen bg-black relative">
+      <audio ref={audioRef} src="/diary/audio/ambient.mp3" loop />
+      
+      <Canvas camera={{ position: [0, 0, 15], fov: 40 }}>
+        <Scene />
+      </Canvas>
+
+      {/* Manual Start Hint */}
+      {!isPlaying && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="text-white/10 text-[10px] uppercase tracking-[2em] animate-pulse">
+            Click or Scroll to Start
+          </div>
+        </div>
+      )}
+
+      {/* Audio Button */}
+      <div className="absolute bottom-10 right-10 z-20">
+        <button 
+          onClick={() => {
+            if (audioRef.current) {
+              if (isPlaying) audioRef.current.pause(); else audioRef.current.play();
+              setIsPlaying(!isPlaying);
+            }
+          }}
+          className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center"
+        >
+          <div className={`w-1.5 h-1.5 rounded-full ${isPlaying ? 'bg-blue-400 shadow-[0_0_10px_cyan]' : 'bg-white/20'}`} />
+        </button>
+      </div>
+    </div>
+  );
+}
