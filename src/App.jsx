@@ -8,10 +8,62 @@ const milestones = [
   { id: 'school', icon: '🎒', label: 'New World', index: 12 },
 ];
 
-const Sparkles = () => {
-  const [particles] = useState(() => Array.from({ length: 40 }));
+// High-definition James Webb / Universe background images
+const universeImages = [
+  "https://stsci-opo.org/STScI-01G8G07Z9P362V73FR7A7QN88B.png", // Carina Nebula
+  "https://stsci-opo.org/STScI-01G8GYE3S6ZPV9Z5X6XJZJG0Z5.png", // Southern Ring Nebula
+  "https://stsci-opo.org/STScI-01G8H0E8Z9P362V73FR7A7QN88B.png", // Stephan's Quintet
+  "https://stsci-opo.org/STScI-01G8H1E8Z9P362V73FR7A7QN88B.png", // Deep Field
+];
+
+const UniverseBackground = () => {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % universeImages.length);
+    }, 6000); // Change every 6 seconds
+    return () => clearInterval(timer);
+  }, []);
+
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    <div className="absolute inset-0 z-0 overflow-hidden bg-black">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={index}
+          initial={{ opacity: 0, scale: 1.2 }}
+          animate={{ 
+            opacity: 0.4, 
+            scale: 1,
+            x: [0, -20, 20, 0],
+            y: [0, 10, -10, 0]
+          }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          transition={{ 
+            opacity: { duration: 2 },
+            scale: { duration: 8, ease: "linear" },
+            x: { duration: 20, repeat: Infinity, ease: "linear" },
+            y: { duration: 15, repeat: Infinity, ease: "linear" }
+          }}
+          className="absolute inset-0 w-full h-full"
+        >
+          <img 
+            src={universeImages[index]} 
+            className="w-full h-full object-cover" 
+            alt="Universe" 
+          />
+        </motion.div>
+      </AnimatePresence>
+      {/* Dark overlay to make the main content pop */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80 z-1" />
+    </div>
+  );
+};
+
+const Sparkles = () => {
+  const [particles] = useState(() => Array.from({ length: 30 }));
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden z-10">
       {particles.map((_, i) => (
         <motion.div
           key={i}
@@ -21,18 +73,17 @@ const Sparkles = () => {
             opacity: 0 
           }}
           animate={{
-            x: [null, Math.random() * window.innerWidth, Math.random() * window.innerWidth],
-            y: [null, Math.random() * window.innerHeight, Math.random() * window.innerHeight],
-            opacity: [0, 0.8, 0.4, 1, 0],
-            scale: [0, 1.5, 0.5, 1.2, 0],
-            rotate: [0, 180, 360]
+            x: [null, Math.random() * window.innerWidth],
+            y: [null, Math.random() * window.innerHeight],
+            opacity: [0, 0.6, 0],
+            scale: [0, 1, 0],
           }}
           transition={{
-            duration: 5 + Math.random() * 15,
+            duration: 10 + Math.random() * 10,
             repeat: Infinity,
             ease: "easeInOut"
           }}
-          className="absolute w-1 h-1 bg-yellow-100 rounded-full blur-[0.5px] shadow-[0_0_10px_#fff,0_0_20px_#ffd700]"
+          className="absolute w-0.5 h-0.5 bg-white rounded-full blur-[0.5px]"
         />
       ))}
     </div>
@@ -108,7 +159,7 @@ export default function App() {
         transition={{ duration: 2, repeat: Infinity }}
         className="text-yellow-200 text-xl tracking-[1em] font-serif uppercase"
       >
-        Magic Loading...
+        Opening the Universe...
       </motion.div>
     </div>
   );
@@ -116,62 +167,62 @@ export default function App() {
   const currentPhoto = photos[currentIndex];
 
   return (
-    <div className="h-screen w-screen bg-[#02040a] text-white overflow-hidden flex flex-col font-serif select-none relative">
+    <div className="h-screen w-screen bg-black text-white overflow-hidden flex flex-col font-serif select-none relative">
       <audio ref={audioRef} src="/diary/audio/ambient.mp3" loop />
       
-      {/* Disney Magic Background */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#1a1f3c_0%,#02040a_100%)]" />
+      {/* Dynamic Universe Background */}
+      <UniverseBackground />
       <Sparkles />
       
       {/* Main Photo Viewer - 75% HEIGHT FOCUS */}
-      <div className="relative h-[75vh] flex items-center justify-center overflow-hidden px-4 pt-6 pb-2">
+      <div className="relative h-[70vh] flex items-center justify-center overflow-hidden px-4 pt-10 pb-2 z-10">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentIndex}
-            initial={{ opacity: 0, scale: 0.95, filter: "blur(30px)" }}
+            initial={{ opacity: 0, scale: 0.8, filter: "blur(40px)" }}
             animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, scale: 1.05, filter: "blur(30px)" }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            exit={{ opacity: 0, scale: 1.2, filter: "blur(40px)" }}
+            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
             className="absolute w-full h-full flex items-center justify-center"
           >
-            <div className="relative w-full h-full max-w-[95vw] flex items-center justify-center group">
-              {/* Cinematic Aura */}
-              <div className="absolute -inset-10 bg-gradient-to-tr from-blue-600/10 via-yellow-200/20 to-purple-600/10 rounded-[3rem] blur-3xl opacity-30" />
+            <div className="relative w-full h-full max-w-[95vw] flex items-center justify-center">
+              {/* Magic Glow Border */}
+              <div className="absolute -inset-4 bg-white/5 rounded-2xl blur-2xl" />
               <img
                 src={currentPhoto.url}
-                className="relative max-w-full max-h-full object-contain rounded-lg shadow-[0_0_80px_rgba(0,0,0,0.9)] border border-white/5"
+                className="relative max-w-full max-h-full object-contain rounded-xl shadow-[0_0_100px_rgba(0,0,0,0.9)] border border-white/10"
                 alt=""
               />
             </div>
           </motion.div>
         </AnimatePresence>
 
-        {/* Floating Magic Controls */}
+        {/* Navigation Arrows */}
         <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-8 z-20 pointer-events-none">
           <motion.button 
             whileHover={{ scale: 1.2, x: -10 }}
             onClick={() => paginate(-1)}
-            className={`pointer-events-auto p-5 rounded-full bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl transition-all ${currentIndex === 0 ? 'opacity-0 scale-0' : 'opacity-100'}`}
+            className={`pointer-events-auto p-5 rounded-full bg-white/5 backdrop-blur-3xl border border-white/10 shadow-2xl transition-all ${currentIndex === 0 ? 'opacity-0 scale-0' : 'opacity-100'}`}
           >
-            <span className="text-2xl filter drop-shadow-[0_0_8px_#ffd700]">✨</span>
+            <span className="text-2xl filter drop-shadow-[0_0_8px_#fff]">✨</span>
           </motion.button>
           <motion.button 
             whileHover={{ scale: 1.2, x: 10 }}
             onClick={() => paginate(1)}
-            className={`pointer-events-auto p-5 rounded-full bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl transition-all ${currentIndex === photos.length - 1 ? 'opacity-0 scale-0' : 'opacity-100'}`}
+            className={`pointer-events-auto p-5 rounded-full bg-white/5 backdrop-blur-3xl border border-white/10 shadow-2xl transition-all ${currentIndex === photos.length - 1 ? 'opacity-0 scale-0' : 'opacity-100'}`}
           >
-            <span className="text-2xl filter drop-shadow-[0_0_8px_#ffd700]">✨</span>
+            <span className="text-2xl filter drop-shadow-[0_0_8px_#fff]">✨</span>
           </motion.button>
         </div>
       </div>
 
-      {/* 25% Bottom Section */}
-      <div className="h-[25vh] relative z-30 w-full flex flex-col justify-center gap-4 pb-6 pt-2 bg-gradient-to-t from-black via-black/80 to-transparent">
+      {/* 30% Bottom Section */}
+      <div className="h-[30vh] relative z-30 w-full flex flex-col justify-end gap-4 pb-10 pt-2">
         
-        {/* 1. Thumbnail Strip (Very Minimal & Classy) */}
+        {/* 1. Thumbnail Strip */}
         <div 
           ref={thumbnailRef}
-          className="flex gap-3 overflow-x-auto no-scrollbar px-20 scroll-smooth w-full items-center h-16"
+          className="flex gap-3 overflow-x-auto no-scrollbar px-20 scroll-smooth w-full items-center h-20"
         >
           {photos.map((photo, i) => (
             <motion.div
@@ -181,10 +232,10 @@ export default function App() {
                 setDirection(i > currentIndex ? 1 : -1);
                 setCurrentIndex(i);
               }}
-              className={`flex-shrink-0 h-12 w-12 rounded-lg overflow-hidden cursor-pointer transition-all duration-700 ${
+              className={`flex-shrink-0 h-14 w-14 rounded-lg overflow-hidden cursor-pointer transition-all duration-700 ${
                 i === currentIndex 
-                  ? 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-black scale-125 z-10' 
-                  : 'opacity-20 grayscale hover:grayscale-0 hover:opacity-100'
+                  ? 'ring-2 ring-white ring-offset-4 ring-offset-black scale-125 z-10' 
+                  : 'opacity-20 grayscale hover:grayscale-0 hover:opacity-80'
               }`}
             >
               <img src={photo.url} className="w-full h-full object-cover" alt="" />
@@ -194,7 +245,7 @@ export default function App() {
 
         {/* 2. Magic Slider */}
         <div className="w-full max-w-3xl mx-auto px-12 relative h-6 flex items-center">
-          <div className="absolute inset-x-12 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+          <div className="absolute inset-x-12 h-[1px] bg-white/10 rounded-full" />
           <input
             type="range"
             min="0"
@@ -203,12 +254,12 @@ export default function App() {
             onChange={handleScrub}
             onMouseDown={() => setIsScrubbing(true)}
             onMouseUp={() => setIsScrubbing(false)}
-            className="w-full h-full bg-transparent appearance-none cursor-pointer z-10 disney-slider"
+            className="w-full h-full bg-transparent appearance-none cursor-pointer z-10 universe-slider"
           />
         </div>
 
-        {/* 3. Milestone Bar (Floating above bottom) */}
-        <div className="w-full max-w-xl mx-auto flex justify-between items-center relative px-8">
+        {/* 3. Milestone Bar */}
+        <div className="w-full max-w-xl mx-auto flex justify-between items-center relative px-8 pb-4">
           {milestones.map((milestone) => (
             <motion.button
               key={milestone.id}
@@ -222,18 +273,18 @@ export default function App() {
               }`}
             >
               <span className={`text-[10px] font-black tracking-[0.4em] uppercase transition-all ${
-                currentIndex >= milestone.index ? 'text-yellow-200 shadow-glow' : 'text-white/20'
+                currentIndex >= milestone.index ? 'text-white shadow-glow' : 'text-white/20'
               }`}>
                 {milestone.label}
               </span>
               <div className={`w-1 h-1 rounded-full transition-all duration-700 ${
-                currentIndex >= milestone.index ? 'bg-yellow-400 shadow-[0_0_10px_#ffd700]' : 'bg-white/10'
+                currentIndex >= milestone.index ? 'bg-white shadow-[0_0_10px_#fff]' : 'bg-white/10'
               }`} />
             </motion.button>
           ))}
         </div>
 
-        {/* Audio Pulse */}
+        {/* Audio Control */}
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 opacity-20 hover:opacity-100 transition-opacity">
           <button 
             onClick={() => {
@@ -242,9 +293,9 @@ export default function App() {
                 setIsPlaying(!isPlaying);
               }
             }}
-            className="flex flex-col items-center gap-1 group"
+            className="p-2"
           >
-            <div className={`w-1 h-1 rounded-full ${isPlaying ? 'bg-yellow-400 animate-ping' : 'bg-white/20'}`} />
+            <div className={`w-1 h-1 rounded-full ${isPlaying ? 'bg-white animate-ping' : 'bg-white/20'}`} />
           </button>
         </div>
       </div>
@@ -253,23 +304,22 @@ export default function App() {
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .shadow-glow { text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+        .shadow-glow { text-shadow: 0 0 10px rgba(255,255,255,0.5); }
 
-        .disney-slider::-webkit-slider-thumb {
+        .universe-slider::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
-          width: 16px;
-          height: 16px;
+          width: 12px;
+          height: 12px;
           background: #fff;
-          border: 2px solid #ffd700;
           border-radius: 50%;
           cursor: pointer;
-          box-shadow: 0 0 15px #ffd700;
+          box-shadow: 0 0 15px #fff;
           transition: transform 0.3s ease;
         }
         
-        .disney-slider::-webkit-slider-thumb:hover {
-          transform: scale(1.4);
+        .universe-slider::-webkit-slider-thumb:hover {
+          transform: scale(1.5);
         }
       `}} />
     </div>
