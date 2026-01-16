@@ -2,17 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const milestones = [
-  { id: 'birth', icon: '🍼', label: 'Birth', index: 0 },
-  { id: 'walk', icon: '👣', label: 'First Walk', index: 4 },
-  { id: 'birthday', icon: '🎂', label: '1st Birthday', index: 8 },
-  { id: 'school', icon: '🎒', label: 'School', index: 12 },
+  { id: 'birth', icon: '✨', label: 'Magic Begins', index: 0 },
+  { id: 'walk', icon: '👣', label: 'First Steps', index: 4 },
+  { id: 'birthday', icon: '🎂', label: 'Golden Year', index: 8 },
+  { id: 'school', icon: '🎒', label: 'New World', index: 12 },
 ];
 
-const Fireflies = () => {
-  const [flies] = useState(() => Array.from({ length: 20 }));
+const Sparkles = () => {
+  const [particles] = useState(() => Array.from({ length: 40 }));
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      {flies.map((_, i) => (
+      {particles.map((_, i) => (
         <motion.div
           key={i}
           initial={{ 
@@ -23,15 +23,16 @@ const Fireflies = () => {
           animate={{
             x: [null, Math.random() * window.innerWidth, Math.random() * window.innerWidth],
             y: [null, Math.random() * window.innerHeight, Math.random() * window.innerHeight],
-            opacity: [0, 0.4, 0.2, 0.6, 0],
-            scale: [1, 1.2, 0.8, 1]
+            opacity: [0, 0.8, 0.4, 1, 0],
+            scale: [0, 1.5, 0.5, 1.2, 0],
+            rotate: [0, 180, 360]
           }}
           transition={{
-            duration: 10 + Math.random() * 20,
+            duration: 5 + Math.random() * 15,
             repeat: Infinity,
-            ease: "linear"
+            ease: "easeInOut"
           }}
-          className="absolute w-1 h-1 bg-yellow-200 rounded-full blur-[1px] shadow-[0_0_8px_rgba(253,224,71,0.8)]"
+          className="absolute w-1 h-1 bg-yellow-100 rounded-full blur-[0.5px] shadow-[0_0_10px_#fff,0_0_20px_#ffd700]"
         />
       ))}
     </div>
@@ -100,128 +101,101 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
-    let lastScrollTime = 0;
-    const handleWheel = (e) => {
-      const now = Date.now();
-      if (now - lastScrollTime < 400) return;
-      if (Math.abs(e.deltaY) > 20) {
-        if (e.deltaY > 0) paginate(1);
-        else paginate(-1);
-        lastScrollTime = now;
-      }
-    };
-    window.addEventListener('wheel', handleWheel, { passive: true });
-    return () => window.removeEventListener('wheel', handleWheel);
-  }, [currentIndex, photos.length]);
-
   if (photos.length === 0) return (
-    <div className="h-screen w-screen bg-[#0a0c10] flex items-center justify-center">
-      <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-400 rounded-full animate-spin" />
+    <div className="h-screen w-screen bg-[#02040a] flex items-center justify-center">
+      <motion.div 
+        animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity }}
+        className="text-yellow-200 text-xl tracking-[1em] font-serif uppercase"
+      >
+        Magic Loading...
+      </motion.div>
     </div>
   );
 
   const currentPhoto = photos[currentIndex];
 
   return (
-    <div className="h-screen w-screen bg-gradient-to-b from-[#0a0c10] via-[#1a1f2e] to-[#0a0c10] text-white overflow-hidden flex flex-col font-sans select-none relative">
+    <div className="h-screen w-screen bg-[#02040a] text-white overflow-hidden flex flex-col font-serif select-none relative">
       <audio ref={audioRef} src="/diary/audio/ambient.mp3" loop />
-      <Fireflies />
-
-      {/* Ghibli Sky Header */}
-      <div className="absolute top-0 w-full z-30 p-6 flex items-center justify-center pointer-events-none">
-        <motion.div 
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="bg-white/5 backdrop-blur-xl px-8 py-2 rounded-full border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.5)]"
-        >
-          <div className="text-[12px] font-bold tracking-[0.4em] uppercase text-emerald-300/80">Ivaan's Journey</div>
-        </motion.div>
-      </div>
-
-      {/* Main Photo Viewer */}
-      <div className="relative flex-1 flex items-center justify-center overflow-hidden px-4 py-24">
+      
+      {/* Disney Magic Background */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#1a1f3c_0%,#02040a_100%)]" />
+      <Sparkles />
+      
+      {/* Main Photo Viewer - EXTRA BIG */}
+      <div className="relative flex-[1.5] flex items-center justify-center overflow-hidden px-4 pt-12 pb-4">
         <AnimatePresence initial={false} custom={direction}>
           <motion.div
             key={currentIndex}
             custom={direction}
-            initial={{ x: direction > 0 ? '100%' : '-100%', opacity: 0, scale: 0.8 }}
-            animate={{ x: 0, opacity: 1, scale: 1 }}
-            exit={{ x: direction < 0 ? '100%' : '-100%', opacity: 0, scale: 0.8 }}
-            transition={{ type: "spring", stiffness: 200, damping: 25 }}
-            className="absolute max-w-full max-h-full flex items-center justify-center p-4"
+            initial={{ opacity: 0, scale: 0.9, filter: "blur(20px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, scale: 1.1, filter: "blur(20px)" }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute w-full h-full flex items-center justify-center p-4"
           >
-            <div className="relative group">
-              {/* Magic Border Effect */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 via-blue-500/20 to-purple-500/20 rounded-2xl blur-lg opacity-50 group-hover:opacity-100 transition-opacity" />
+            <div className="relative w-full h-full max-w-6xl flex items-center justify-center group">
+              {/* Golden Magic Frame */}
+              <div className="absolute -inset-2 bg-gradient-to-tr from-yellow-600/30 via-yellow-200/40 to-yellow-600/30 rounded-[2rem] blur-xl opacity-40 group-hover:opacity-100 transition-opacity duration-1000" />
               <img
                 src={currentPhoto.url}
-                className="relative max-w-full max-h-[70vh] object-contain rounded-xl shadow-2xl border border-white/10"
+                className="relative max-w-full max-h-full object-contain rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-yellow-200/20"
                 alt=""
               />
             </div>
           </motion.div>
         </AnimatePresence>
 
-        {/* Milestone Navigation Buttons (Instead of plain circles) */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-8 z-20 pointer-events-none">
+        {/* Navigation Arrows */}
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-12 z-20 pointer-events-none">
           <motion.button 
-            whileHover={{ scale: 1.1, x: -5 }}
-            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.2, rotate: -10 }}
             onClick={() => paginate(-1)}
-            disabled={currentIndex === 0}
-            className={`pointer-events-auto p-5 rounded-full bg-white/5 backdrop-blur-2xl border border-white/10 shadow-lg transition-all ${currentIndex === 0 ? 'opacity-0' : 'opacity-100 text-emerald-400'}`}
+            className={`pointer-events-auto p-6 rounded-full bg-white/5 backdrop-blur-3xl border border-yellow-200/10 shadow-[0_0_20px_rgba(255,215,0,0.1)] transition-all ${currentIndex === 0 ? 'opacity-0' : 'opacity-100'}`}
           >
-            <span className="text-2xl">🍃</span>
+            <span className="text-3xl drop-shadow-[0_0_10px_#ffd700]">✨</span>
           </motion.button>
           <motion.button 
-            whileHover={{ scale: 1.1, x: 5 }}
-            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.2, rotate: 10 }}
             onClick={() => paginate(1)}
-            disabled={currentIndex === photos.length - 1}
-            className={`pointer-events-auto p-5 rounded-full bg-white/5 backdrop-blur-2xl border border-white/10 shadow-lg transition-all ${currentIndex === photos.length - 1 ? 'opacity-0' : 'opacity-100 text-emerald-400'}`}
+            className={`pointer-events-auto p-6 rounded-full bg-white/5 backdrop-blur-3xl border border-yellow-200/10 shadow-[0_0_20px_rgba(255,215,0,0.1)] transition-all ${currentIndex === photos.length - 1 ? 'opacity-0' : 'opacity-100'}`}
           >
-            <span className="text-2xl">✨</span>
+            <span className="text-3xl drop-shadow-[0_0_10px_#ffd700]">✨</span>
           </motion.button>
         </div>
       </div>
 
-      {/* Bottom Growth Path & Controls */}
-      <div className="bg-gradient-to-t from-[#05070a] to-transparent pt-12 pb-10 px-6 flex flex-col gap-10 z-30 w-full">
+      {/* Bottom Tray Section */}
+      <div className="relative z-30 w-full flex flex-col gap-6 pb-12 pt-4 bg-gradient-to-t from-black to-transparent">
         
-        {/* Growth Path (Milestones) */}
-        <div className="w-full max-w-3xl mx-auto flex justify-between items-center relative px-4">
-          <div className="absolute h-0.5 inset-x-8 bg-white/5 top-1/2 -translate-y-1/2 rounded-full overflow-hidden">
-            <motion.div 
-              className="h-full bg-emerald-500/40"
-              animate={{ width: `${(currentIndex / (photos.length - 1)) * 100}%` }}
-            />
-          </div>
-          {milestones.map((milestone) => (
-            <motion.button
-              key={milestone.id}
-              whileHover={{ scale: 1.2, y: -5 }}
-              whileTap={{ scale: 0.9 }}
+        {/* 1. Thumbnail Strip (Above) */}
+        <div 
+          ref={thumbnailRef}
+          className="flex gap-4 overflow-x-auto no-scrollbar py-4 px-20 scroll-smooth w-full"
+        >
+          {photos.map((photo, i) => (
+            <motion.div
+              key={photo.id}
+              whileHover={{ scale: 1.15, y: -10 }}
               onClick={() => {
-                setDirection(milestone.index > currentIndex ? 1 : -1);
-                setCurrentIndex(milestone.index);
+                setDirection(i > currentIndex ? 1 : -1);
+                setCurrentIndex(i);
               }}
-              className={`relative z-10 p-3 rounded-2xl transition-all duration-500 flex flex-col items-center gap-2 ${
-                currentIndex >= milestone.index ? 'bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]' : 'bg-[#1a1f2e] grayscale opacity-40'
+              className={`flex-shrink-0 h-24 w-24 rounded-2xl overflow-hidden cursor-pointer transition-all duration-700 shadow-2xl ${
+                i === currentIndex 
+                  ? 'ring-4 ring-yellow-400 ring-offset-4 ring-offset-[#02040a] scale-125 z-10' 
+                  : 'opacity-30 grayscale'
               }`}
             >
-              <span className="text-xl">{milestone.icon}</span>
-              <span className={`text-[8px] absolute -bottom-6 font-bold tracking-widest uppercase transition-colors whitespace-nowrap ${
-                currentIndex >= milestone.index ? 'text-emerald-400' : 'text-white/20'
-              }`}>
-                {milestone.label}
-              </span>
-            </motion.button>
+              <img src={photo.url} className="w-full h-full object-cover" alt="" />
+            </motion.div>
           ))}
         </div>
 
-        {/* Dynamic Scrubber */}
-        <div className="w-full max-w-2xl mx-auto px-4 relative mt-4">
+        {/* 2. Magic Scrubber Bar (Middle) */}
+        <div className="w-full max-w-4xl mx-auto px-12 relative h-12 flex items-center">
+          <div className="absolute inset-x-12 h-[2px] bg-gradient-to-r from-transparent via-yellow-200/20 to-transparent rounded-full" />
           <input
             type="range"
             min="0"
@@ -230,54 +204,54 @@ export default function App() {
             onChange={handleScrub}
             onMouseDown={() => setIsScrubbing(true)}
             onMouseUp={() => setIsScrubbing(false)}
-            className="w-full h-1 bg-white/5 rounded-full appearance-none cursor-pointer ghibli-scrubber"
+            className="w-full h-full bg-transparent appearance-none cursor-pointer z-10 disney-slider"
           />
         </div>
 
-        {/* Thumbnail Scroll */}
-        <div 
-          ref={thumbnailRef}
-          className="flex gap-3 overflow-x-auto no-scrollbar py-2 px-10 scroll-smooth w-full"
-        >
-          {photos.map((photo, i) => (
-            <motion.div
-              key={photo.id}
-              whileHover={{ scale: 1.1 }}
+        {/* 3. Milestones Slider (Very Bottom) */}
+        <div className="w-full max-w-2xl mx-auto flex justify-between items-center relative px-8 py-2">
+          {milestones.map((milestone) => (
+            <motion.button
+              key={milestone.id}
+              whileHover={{ scale: 1.2, y: -5 }}
               onClick={() => {
-                setDirection(i > currentIndex ? 1 : -1);
-                setCurrentIndex(i);
+                setDirection(milestone.index > currentIndex ? 1 : -1);
+                setCurrentIndex(milestone.index);
               }}
-              className={`flex-shrink-0 h-20 w-20 rounded-xl overflow-hidden cursor-pointer transition-all duration-500 shadow-xl ${
-                i === currentIndex 
-                  ? 'ring-4 ring-emerald-400 ring-offset-4 ring-offset-black scale-110' 
-                  : 'opacity-20 hover:opacity-100 grayscale hover:grayscale-0'
+              className={`flex flex-col items-center gap-3 transition-all duration-1000 ${
+                currentIndex >= milestone.index ? 'opacity-100' : 'opacity-20'
               }`}
             >
-              <img src={photo.url} className="w-full h-full object-cover" alt="" />
-            </motion.div>
+              <div className={`p-4 rounded-full border transition-all duration-700 ${
+                currentIndex >= milestone.index 
+                  ? 'bg-yellow-400/20 border-yellow-400 shadow-[0_0_20px_#ffd700]' 
+                  : 'border-white/10'
+              }`}>
+                <span className="text-2xl">{milestone.icon}</span>
+              </div>
+              <span className={`text-[10px] font-bold tracking-[0.3em] uppercase transition-all ${
+                currentIndex >= milestone.index ? 'text-yellow-200 shadow-glow' : 'text-white/20'
+              }`}>
+                {milestone.label}
+              </span>
+            </motion.button>
           ))}
         </div>
 
-        {/* Minimal Audio Control */}
-        <div className="flex justify-center">
-          <motion.button 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+        {/* Audio Pulse */}
+        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 opacity-20 hover:opacity-100 transition-opacity">
+          <button 
             onClick={() => {
               if (audioRef.current) {
                 if (isPlaying) audioRef.current.pause(); else audioRef.current.play();
                 setIsPlaying(!isPlaying);
               }
             }}
-            className={`px-8 py-3 rounded-full border border-white/10 backdrop-blur-2xl flex items-center gap-4 transition-all ${
-              isPlaying ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-white/5'
-            }`}
+            className="flex flex-col items-center gap-1 group"
           >
-            <div className={`w-2 h-2 rounded-full transition-all duration-500 ${isPlaying ? 'bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,1)] animate-pulse' : 'bg-white/10'}`} />
-            <span className={`text-[10px] font-black tracking-[0.3em] uppercase transition-colors ${isPlaying ? 'text-white' : 'text-white/20'}`}>
-              Nature Ambient {isPlaying ? 'On' : 'Off'}
-            </span>
-          </motion.button>
+            <div className="text-[8px] font-bold tracking-[0.5em] uppercase text-yellow-200">Magic Audio</div>
+            <div className={`w-1 h-1 rounded-full ${isPlaying ? 'bg-yellow-400 animate-ping' : 'bg-white/20'}`} />
+          </button>
         </div>
       </div>
 
@@ -285,21 +259,23 @@ export default function App() {
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .ghibli-scrubber::-webkit-slider-thumb {
+        .shadow-glow { text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+
+        .disney-slider::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
-          width: 20px;
-          height: 20px;
-          background: #34d399;
-          border: 4px solid #05070a;
+          width: 30px;
+          height: 30px;
+          background: #fff;
+          border: 4px solid #ffd700;
           border-radius: 50%;
           cursor: pointer;
-          box-shadow: 0 0 15px rgba(52,211,153,0.5);
-          transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+          box-shadow: 0 0 20px #ffd700, inset 0 0 10px #ffd700;
+          transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         
-        .ghibli-scrubber::-webkit-slider-thumb:hover {
-          transform: scale(1.4);
+        .disney-slider::-webkit-slider-thumb:hover {
+          transform: scale(1.3) rotate(45deg);
         }
       `}} />
     </div>
