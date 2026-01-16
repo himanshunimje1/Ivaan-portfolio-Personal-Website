@@ -86,24 +86,20 @@ export default function App() {
   const currentPhoto = photos[currentIndex];
 
   const variants = {
-    enter: {
-      y: 600,
-      scale: 0.1,
-      opacity: 0,
-      filter: "blur(10px)"
-    },
+    enter: (direction) => ({
+      x: direction > 0 ? 1000 : -1000,
+      opacity: 0
+    }),
     center: {
-      y: 0,
-      scale: 1,
-      opacity: 1,
-      filter: "blur(0px)"
+      zIndex: 1,
+      x: 0,
+      opacity: 1
     },
-    exit: {
-      y: 600,
-      scale: 0.1,
-      opacity: 0,
-      filter: "blur(10px)"
-    }
+    exit: (direction) => ({
+      zIndex: 0,
+      x: direction < 0 ? 1000 : -1000,
+      opacity: 0
+    })
   };
 
   return (
@@ -127,20 +123,20 @@ export default function App() {
 
       {/* Main Photo Viewer */}
       <div className="relative flex-1 flex items-center justify-center overflow-hidden px-4 py-20">
-        <AnimatePresence mode="wait">
+        <AnimatePresence initial={false} custom={direction}>
           <motion.img
             key={currentIndex}
             src={currentPhoto.url}
+            custom={direction}
             variants={variants}
             initial="enter"
             animate="center"
             exit="exit"
             transition={{
-              y: { type: "spring", stiffness: 200, damping: 25 },
-              scale: { duration: 0.4, ease: [0.32, 0.72, 0, 1] },
-              opacity: { duration: 0.3 }
+              x: { type: "spring", stiffness: 300, damping: 30 },
+              opacity: { duration: 0.2 }
             }}
-            className="max-w-full max-h-full object-contain shadow-[0_50px_100px_rgba(0,0,0,0.9)] rounded-lg border border-white/5"
+            className="max-w-full max-h-full object-contain shadow-2xl rounded-sm"
             style={{ position: 'absolute' }}
           />
         </AnimatePresence>
