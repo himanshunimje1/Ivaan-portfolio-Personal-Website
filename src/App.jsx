@@ -47,6 +47,20 @@ export default function App() {
     }
   };
 
+  // Keyboard Navigation handler
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowRight') {
+        paginate(1);
+      } else if (e.key === 'ArrowLeft') {
+        paginate(-1);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentIndex, photos.length]);
+
   // Scrubber handler
   const handleScrub = (e) => {
     const newIndex = parseInt(e.target.value);
@@ -161,10 +175,10 @@ export default function App() {
       </div>
 
       {/* Bottom Scrubber & Filmstrip */}
-      <div className="bg-gradient-to-t from-black to-transparent pt-10 pb-8 px-4 flex flex-col gap-8 z-30">
+      <div className="bg-gradient-to-t from-black to-transparent pt-10 pb-8 px-4 flex flex-col gap-8 z-30 w-full max-w-[100vw]">
         
         {/* Apple Style Slider Bar */}
-        <div className="w-full max-w-lg mx-auto px-10 relative group">
+        <div className="w-full max-w-2xl mx-auto px-10 relative group">
           <div className="absolute inset-x-10 top-1/2 -translate-y-1/2 h-0.5 bg-white/10 rounded-full" />
           <input
             type="range"
@@ -187,7 +201,7 @@ export default function App() {
         {/* Thumbnail Scrubber */}
         <div 
           ref={thumbnailRef}
-          className="flex gap-1.5 overflow-x-auto no-scrollbar py-2 px-10 scroll-smooth"
+          className="flex gap-2 overflow-x-auto no-scrollbar py-2 px-10 scroll-smooth w-full"
         >
           {photos.map((photo, i) => (
             <div
@@ -196,10 +210,10 @@ export default function App() {
                 setDirection(i > currentIndex ? 1 : -1);
                 setCurrentIndex(i);
               }}
-              className={`flex-shrink-0 h-12 w-12 rounded-md overflow-hidden cursor-pointer transition-all duration-300 ${
+              className={`flex-shrink-0 h-16 w-16 rounded-md overflow-hidden cursor-pointer transition-all duration-300 ${
                 i === currentIndex 
-                  ? 'scale-125 border-2 border-blue-400 opacity-100 z-10 shadow-[0_0_15px_rgba(0,150,255,0.4)]' 
-                  : 'opacity-30 hover:opacity-100 scale-90'
+                  ? 'scale-125 border-2 border-blue-400 opacity-100 z-10 shadow-[0_0_20px_rgba(0,150,255,0.5)]' 
+                  : 'opacity-20 hover:opacity-100 scale-90'
               }`}
             >
               <img src={photo.url} className="w-full h-full object-cover" alt="" />
@@ -208,8 +222,8 @@ export default function App() {
         </div>
 
         {/* Bottom Actions Bar - Minimalized */}
-        <div className="flex items-center justify-center px-6 text-white/80 max-w-md mx-auto w-full">
-          <div className="flex items-center gap-4 bg-white/5 backdrop-blur-2xl rounded-full px-6 py-2 border border-white/10 shadow-xl">
+        <div className="flex items-center justify-center px-6 text-white/80 w-full">
+          <div className="flex items-center gap-4 bg-white/5 backdrop-blur-2xl rounded-full px-10 py-3 border border-white/10 shadow-xl transition-all hover:bg-white/10">
             <button 
               onClick={() => {
                 if (audioRef.current) {
@@ -217,11 +231,11 @@ export default function App() {
                   setIsPlaying(!isPlaying);
                 }
               }}
-              className="flex items-center gap-3"
+              className="flex items-center gap-4"
             >
-              <div className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${isPlaying ? 'bg-blue-400 shadow-[0_0_10px_cyan]' : 'bg-white/10'}`} />
-              <span className={`text-[9px] font-bold tracking-[0.2em] uppercase transition-colors ${isPlaying ? 'text-white' : 'text-white/20'}`}>
-                Audio
+              <div className={`w-3 h-3 rounded-full transition-all duration-500 ${isPlaying ? 'bg-blue-400 shadow-[0_0_15px_cyan] scale-110' : 'bg-white/10'}`} />
+              <span className={`text-[10px] font-bold tracking-[0.4em] uppercase transition-colors ${isPlaying ? 'text-white' : 'text-white/20'}`}>
+                System Audio
               </span>
             </button>
           </div>
