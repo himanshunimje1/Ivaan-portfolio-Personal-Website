@@ -14,12 +14,9 @@ const photos = [
   { id: 3, url: '/diary/IMG_7071.JPG' },
   { id: 4, url: '/diary/IMG_7072.JPG' },
   { id: 5, url: '/diary/IMG_8667.jpg' },
-  { id: 6, url: '/diary/17C0D3CC-FE7D-40A7-938E-BE5C402A1696.jpg' },
-  { id: 7, url: '/diary/IMG_7070.JPG' },
-  { id: 8, url: '/diary/IMG_7071.JPG' },
 ];
 
-function GlassFrame({ url, index, total, randomPos }) {
+function GlassFrame({ url, index, total }) {
   const meshRef = useRef();
   const texture = useTexture(url);
   const scroll = useScroll();
@@ -31,74 +28,74 @@ function GlassFrame({ url, index, total, randomPos }) {
     const personalOffset = index / total;
     const distance = Math.abs(scrollOffset - personalOffset);
     
-    // Focus logic: Active one grows and comes forward
+    // Focus logic: Active one is giant (95% of viewport), others are smaller on the sides
     const focus = 1 - Math.min(distance * 3, 1);
-    const scaleTarget = 0.5 + focus * 2.5;
     
-    // SIDEWAYS MOVEMENT: We map the scroll to horizontal X position
-    // As you scroll, frames move from right to left
-    const xBase = (index - scrollOffset * total) * (viewport.width * 0.4);
-    const zTarget = randomPos.z + focus * 8;
+    // Calculate 95% of viewport size
+    const targetWidth = viewport.width * 0.95;
+    const targetHeight = viewport.height * 0.95;
+    
+    // Position sideways: Center the active one
+    const xBase = (index - scrollOffset * total) * (viewport.width * 1.1);
+    const zTarget = focus * 5; // Move closer to camera when active
 
-    meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, xBase + randomPos.x * 0.2, 0.1);
+    meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, xBase, 0.1);
     meshRef.current.position.z = THREE.MathUtils.lerp(meshRef.current.position.z, zTarget, 0.1);
     
-    // Floating movement
+    // Adjust scale based on focus
+    const scaleFactor = 0.4 + focus * 0.6;
+    meshRef.current.scale.setScalar(THREE.MathUtils.lerp(meshRef.current.scale.x, scaleFactor, 0.1));
+    
+    // Glassy floating drift
     const time = state.clock.getElapsedTime();
-    meshRef.current.position.y = randomPos.y + Math.sin(time * 0.5 + index) * 0.2;
+    meshRef.current.position.y = Math.sin(time * 0.3 + index) * 0.1;
   });
 
   return (
-    <group position={[randomPos.x, randomPos.y, randomPos.z]} ref={meshRef}>
-      {/* Glass Backplate */}
+    <group ref={meshRef}>
+      {/* Glass Backplate (Apple style) */}
       <mesh position={[0, 0, -0.05]}>
-        <planeGeometry args={[3.2, 4.2]} />
+        <planeGeometry args={[viewport.width * 0.96, viewport.height * 0.96]} />
         <meshStandardMaterial 
           color="#ffffff" 
           transparent 
-          opacity={0.1} 
-          roughness={0} 
-          metalness={1}
+          opacity={0.05} 
+          roughness={0.1} 
+          metalness={0.9}
         />
       </mesh>
 
-      {/* The Photo */}
+      {/* The Photo (Takes 95% of screen when focused) */}
       <mesh>
-        <planeGeometry args={[3, 4]} />
+        <planeGeometry args={[viewport.width * 0.95, viewport.height * 0.95]} />
         <meshBasicMaterial map={texture} side={THREE.DoubleSide} />
+      </mesh>
+
+      {/* Thin Light Border */}
+      <mesh position={[0, 0, 0.01]}>
+        <planeGeometry args={[viewport.width * 0.952, viewport.height * 0.952]} />
+        <meshBasicMaterial color="white" transparent opacity={0.02} wireframe />
       </mesh>
     </group>
   );
 }
 
 function Scene() {
-  const { viewport } = useThree();
-  
-  const frames = useMemo(() => photos.map((p, i) => ({
-    ...p,
-    pos: {
-      x: (Math.random() - 0.5) * 5,
-      y: (Math.random() - 0.5) * 5,
-      z: -Math.random() * 10
-    }
-  })), []);
-
   return (
     <>
       <color attach="background" args={['#000000']} />
-      <ambientLight intensity={2} />
-      <pointLight position={[10, 10, 10]} intensity={5} />
+      <ambientLight intensity={1.5} />
+      <pointLight position={[10, 10, 10]} intensity={3} />
       
-      {/* Horizontal scroll enabled by using 'horizontal' prop */}
-      <ScrollControls pages={photos.length * 0.5} damping={0.2} horizontal>
+      {/* Increased pages to make the horizontal scroll feel more substantial */}
+      <ScrollControls pages={photos.length} damping={0.3} horizontal>
         <Scroll>
-          {frames.map((frame, i) => (
-            <Suspense key={frame.id} fallback={null}>
+          {photos.map((photo, i) => (
+            <Suspense key={photo.id} fallback={null}>
               <GlassFrame 
-                {...frame} 
+                url={photo.url} 
                 index={i} 
-                total={frames.length} 
-                randomPos={frame.pos} 
+                total={photos.length} 
               />
             </Suspense>
           ))}
@@ -132,15 +129,14 @@ export default function App() {
     <div className="h-screen w-screen bg-black relative">
       <audio ref={audioRef} src="/diary/audio/ambient.mp3" loop />
       
-      <Canvas camera={{ position: [0, 0, 15], fov: 40 }}>
+      <Canvas camera={{ position: [0, 0, 10], fov: 40 }}>
         <Scene />
       </Canvas>
 
-      {/* Manual Start Hint */}
       {!isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="text-white/10 text-[10px] uppercase tracking-[2em] animate-pulse">
-            Swipe or Scroll Sideways
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+          <div className="text-white/10 text-[10px] uppercase tracking-[2.5em] animate-pulse">
+            Scroll Sideways
           </div>
         </div>
       )}
@@ -149,12 +145,14 @@ export default function App() {
       <div className="absolute bottom-10 right-10 z-20">
         <button 
           onClick={() => {
-            if (isPlaying) audioRef.current.pause(); else audioRef.current.play();
-            setIsPlaying(!isPlaying);
+            if (audioRef.current) {
+              if (isPlaying) audioRef.current.pause(); else audioRef.current.play();
+              setIsPlaying(!isPlaying);
+            }
           }}
-          className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center"
+          className="w-12 h-12 rounded-full border border-white/10 bg-black/40 backdrop-blur-xl flex items-center justify-center transition-all hover:bg-white/10"
         >
-          <div className={`w-1.5 h-1.5 rounded-full ${isPlaying ? 'bg-blue-400 shadow-[0_0_10px_cyan]' : 'bg-white/20'}`} />
+          <div className={`w-2 h-2 rounded-full transition-all duration-700 ${isPlaying ? 'bg-blue-400 shadow-[0_0_15px_cyan]' : 'bg-white/20'}`} />
         </button>
       </div>
     </div>
