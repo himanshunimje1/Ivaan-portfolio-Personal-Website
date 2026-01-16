@@ -5,47 +5,51 @@ import {
   ScrollControls, 
   Scroll, 
   useScroll, 
+  Preload,
 } from '@react-three/drei';
 import * as THREE from 'three';
 
 function PhotoFrame({ url, index, total }) {
   const meshRef = useRef();
   const texture = useTexture(url);
-  const scroll = useScroll();
   const { viewport } = useThree();
 
   // Calculate the appropriate aspect ratio to avoid stretching
-  const imageAspect = texture.image.width / texture.image.height;
+  const imageAspect = texture.image ? (texture.image.width / texture.image.height) : 1;
   const viewportAspect = viewport.width / viewport.height;
   
   let width, height;
   if (imageAspect > viewportAspect) {
-    width = viewport.width * 0.85;
+    width = viewport.width * 0.9;
     height = width / imageAspect;
   } else {
-    height = viewport.height * 0.85;
+    height = viewport.height * 0.9;
     width = height * imageAspect;
   }
+
+  useScroll(); // We need to access scroll inside useFrame via the hook
+  const scroll = useScroll();
 
   useFrame(() => {
     if (!meshRef.current) return;
     
     // Normalize scroll progress (0 to total-1)
+    // We use a slightly different multiplier to ensure we can reach the end
     const scrollProgress = scroll.offset * (total - 1);
     const distance = scrollProgress - index;
     
     // POSITION: Space them out by exactly one viewport width
-    // This ensures only the current and next/prev are visible during transition
     const targetX = -distance * viewport.width;
     meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, targetX, 0.1);
     
-    // OPACITY: Only show the two photos involved in the current transition
-    const opacity = Math.max(0, 1 - Math.abs(distance));
-    meshRef.current.material.opacity = THREE.MathUtils.lerp(meshRef.current.material.opacity, opacity, 0.15);
+    // OPACITY: Sharp transition
+    // distance is 0 when fully active, 1 when neighbor is active
+    const opacity = Math.max(0, 1 - Math.abs(distance) * 1.5);
+    meshRef.current.material.opacity = THREE.MathUtils.lerp(meshRef.current.material.opacity, opacity, 0.2);
     meshRef.current.material.transparent = true;
     
-    // Subtle scale for depth
-    const scale = 0.95 + opacity * 0.05;
+    // SCALE: Zoom effect as it becomes active
+    const scale = 0.9 + (opacity * 0.1);
     meshRef.current.scale.setScalar(scale);
   });
 
@@ -62,7 +66,8 @@ function Scene({ photos }) {
     <>
       <color attach="background" args={['#000000']} />
       
-      <ScrollControls pages={photos.length} damping={0.4} horizontal>
+      {/* Increased pages to make scrolling feel more deliberate */}
+      <ScrollControls pages={photos.length} damping={0.3} horizontal>
         <Scroll>
           {photos.map((photo, i) => (
             <Suspense key={photo.url} fallback={null}>
@@ -70,6 +75,7 @@ function Scene({ photos }) {
             </Suspense>
           ))}
         </Scroll>
+        <Preload all />
       </ScrollControls>
     </>
   );
@@ -83,7 +89,10 @@ export default function App() {
   useEffect(() => {
     fetch('/diary/manifest.json')
       .then(res => res.json())
-      .then(data => setPhotos(data))
+      .then(data => {
+        // Sort or filter if needed, but for now just use as is
+        setPhotos(data);
+      })
       .catch(err => console.error('Error loading manifest:', err));
 
     const play = () => {
@@ -101,7 +110,11 @@ export default function App() {
     };
   }, []);
 
-  if (photos.length === 0) return null;
+  if (photos.length === 0) return (
+    <div className="h-screen w-screen bg-black flex items-center justify-center text-white/20 uppercase tracking-[2em] animate-pulse">
+      Loading...
+    </div>
+  );
 
   return (
     <div className="h-screen w-screen bg-black relative">
@@ -111,11 +124,13 @@ export default function App() {
       </Canvas>
 
       {!isPlaying && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
-          <div className="text-white/10 text-[10px] uppercase tracking-[3em] animate-pulse">Ivaan Portfolio</div>
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 text-center px-4">
+          <div className="text-white/20 text-[10px] uppercase tracking-[3em] animate-pulse">Ivaan Portfolio</div>
+          <div className="mt-8 text-white/5 text-[8px] uppercase tracking-[1em]">Scroll to navigate</div>
         </div>
       )}
 
+      {/* Audio Button */}
       <div className="absolute bottom-10 right-10 z-20">
         <button 
           onClick={() => {
@@ -128,6 +143,11 @@ export default function App() {
         >
           <div className={`w-2 h-2 rounded-full transition-all duration-700 ${isPlaying ? 'bg-blue-400 shadow-[0_0_15px_cyan]' : 'bg-white/20'}`} />
         </button>
+      </div>
+      
+      {/* Scroll indicator */}
+      <div className="absolute bottom-10 left-10 text-white/10 text-[8px] uppercase tracking-widest font-light pointer-events-none">
+        01 / {String(photos.length).padStart(2, '0')}
       </div>
     </div>
   );
