@@ -9,48 +9,96 @@ const milestones = [
 ];
 
 const UniverseBackground = () => {
-  const images = [
-    "https://images.unsplash.com/photo-1464802686167-b939a6910659?q=80&w=2000&auto=format&fit=crop", // Galaxy
-    "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2000&auto=format&fit=crop", // Nebula
-    "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=2000&auto=format&fit=crop", // Earth/Space
-    "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?q=80&w=2000&auto=format&fit=crop", // Stars
+  // Video files in public/diary/universe/ folder
+  const videos = [
+    '/diary/universe/galaxy1.mp4',
+    '/diary/universe/galaxy2.mp4',
+    '/diary/universe/galaxy3.mp4',
+    '/diary/universe/galaxy4.mp4',
   ];
+  
+  // Fallback bright images if videos not available
+  const fallbackImages = [
+    "https://images.unsplash.com/photo-1464802686167-b939a6910659?q=80&w=2000&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2000&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=2000&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?q=80&w=2000&auto=format&fit=crop",
+  ];
+  
   const [index, setIndex] = useState(0);
+  const [useVideo, setUseVideo] = useState(true);
+  const videoRef = useRef(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setIndex((prev) => (prev + 1) % images.length);
+      setIndex((prev) => (prev + 1) % videos.length);
     }, 6000);
     return () => clearInterval(timer);
   }, []);
 
+  const handleVideoError = () => {
+    setUseVideo(false);
+  };
+
   return (
-    <div className="fixed inset-0 z-0 bg-black">
+    <div className="fixed inset-0 z-0 bg-black overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.div
           key={index}
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ 
-            opacity: 0.5, 
-            scale: 1,
-            rotate: [0, 1, -1, 0],
-          }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ 
-            opacity: { duration: 2.5 },
-            scale: { duration: 10, ease: "linear" },
-            rotate: { duration: 20, repeat: Infinity, ease: "linear" }
-          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 2 }}
           className="absolute inset-0 w-full h-full"
         >
-          <img 
-            src={images[index]} 
-            className="w-full h-full object-cover" 
-            alt="Universe" 
-          />
+          {useVideo ? (
+            <motion.video
+              ref={videoRef}
+              src={videos[index]}
+              autoPlay
+              loop
+              muted
+              playsInline
+              onError={handleVideoError}
+              className="w-full h-full object-cover"
+              style={{
+                filter: 'brightness(1.8) contrast(1.3) saturate(1.5)',
+              }}
+              animate={{
+                scale: [1, 1.15, 1],
+                x: [0, -50, 50, 0],
+                y: [0, 30, -30, 0],
+              }}
+              transition={{
+                scale: { duration: 25, repeat: Infinity, ease: "easeInOut" },
+                x: { duration: 30, repeat: Infinity, ease: "linear" },
+                y: { duration: 20, repeat: Infinity, ease: "linear" }
+              }}
+            />
+          ) : (
+            <motion.img
+              src={fallbackImages[index]}
+              className="w-full h-full object-cover"
+              style={{
+                filter: 'brightness(1.8) contrast(1.3) saturate(1.5)',
+              }}
+              animate={{
+                scale: [1, 1.2, 1],
+                x: [0, -60, 60, 0],
+                y: [0, 40, -40, 0],
+              }}
+              transition={{
+                scale: { duration: 25, repeat: Infinity, ease: "easeInOut" },
+                x: { duration: 35, repeat: Infinity, ease: "linear" },
+                y: { duration: 25, repeat: Infinity, ease: "linear" }
+              }}
+              alt="Universe"
+            />
+          )}
         </motion.div>
       </AnimatePresence>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]" />
+      {/* Subtle overlay to keep main photo visible */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.5)_100%)]" />
     </div>
   );
 };
