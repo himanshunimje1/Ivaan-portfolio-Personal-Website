@@ -17,6 +17,8 @@ const photos = [
   { id: 6, url: '/diary/17C0D3CC-FE7D-40A7-938E-BE5C402A1696.jpg' },
   { id: 7, url: '/diary/IMG_7070.JPG' },
   { id: 8, url: '/diary/IMG_7071.JPG' },
+  { id: 9, url: '/diary/IMG_7072.JPG' },
+  { id: 10, url: '/diary/IMG_8667.jpg' },
 ];
 
 function CarouselFrame({ url, index, total }) {
@@ -27,36 +29,48 @@ function CarouselFrame({ url, index, total }) {
 
   useFrame((state) => {
     if (!meshRef.current) return;
-    const scrollOffset = scroll.offset; // 0 to 1
+    const scrollOffset = scroll.offset;
     
     // Each photo takes up a slot in the scroll
     const personalOffset = index / total;
     let distance = scrollOffset - personalOffset;
     
-    // Circular logic for the carousel feel
+    // Circular logic
     if (distance > 0.5) distance -= 1;
     if (distance < -0.5) distance += 1;
 
-    // Radius of the carousel circle
-    const radius = viewport.width * 1.5;
+    // RADIUS: Smaller radius brings frames closer to the middle
+    const radius = viewport.width * 0.8; 
     
-    // Angle in radians based on scroll position
+    // Angle logic
     const angle = distance * Math.PI * 2;
     
-    // Position on a circle (Clockwise / Anti-clockwise behavior)
+    // Position on a circle
     const targetX = Math.sin(angle) * radius;
-    const targetZ = Math.cos(angle) * radius - radius; // Pull back so the center one is at z=0
+    const targetZ = Math.cos(angle) * radius - radius; 
 
-    // Smooth transition
+    // Smooth movement
     meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, targetX, 0.1);
     meshRef.current.position.z = THREE.MathUtils.lerp(meshRef.current.position.z, targetZ, 0.1);
     
-    // Rotation to face the center
+    // Face the camera
     meshRef.current.rotation.y = THREE.MathUtils.lerp(meshRef.current.rotation.y, angle, 0.1);
 
-    // Scale logic: 70% of viewport width when in focus
+    // VISIBILITY: Only show the front-side (distance < 0.25)
+    // We'll fade them out as they move to the back
+    const visibility = 1 - Math.min(Math.abs(distance) * 5, 1);
+    
+    // Apply opacity to both the photo and the glass frame
+    meshRef.current.children.forEach(child => {
+      if (child.material) {
+        child.material.opacity = THREE.MathUtils.lerp(child.material.opacity, visibility, 0.1);
+        child.material.transparent = true;
+      }
+    });
+
+    // Scale logic: 70% width
     const focus = 1 - Math.min(Math.abs(distance) * 4, 1);
-    const targetScale = 0.5 + focus * 0.5; // Scale from 50% to 100% relative to our base size
+    const targetScale = 0.7 + focus * 0.3; 
     meshRef.current.scale.setScalar(THREE.MathUtils.lerp(meshRef.current.scale.x, targetScale, 0.1));
   });
 
@@ -74,10 +88,10 @@ function CarouselFrame({ url, index, total }) {
         />
       </mesh>
 
-      {/* The Photo (70% width) */}
+      {/* The Photo */}
       <mesh>
         <planeGeometry args={[viewport.width * 0.7, viewport.height * 0.8]} />
-        <meshBasicMaterial map={texture} side={THREE.DoubleSide} />
+        <meshBasicMaterial map={texture} side={THREE.DoubleSide} transparent />
       </mesh>
 
       {/* Frame Border */}
@@ -96,11 +110,10 @@ function Scene() {
       <ambientLight intensity={1.5} />
       <pointLight position={[10, 10, 10]} intensity={3} />
       
-      {/* We use ScrollControls to drive the carousel rotation */}
       <ScrollControls pages={photos.length} damping={0.3}>
         <Scroll>
           {photos.map((photo, i) => (
-            <Suspense key={photo.id + i} fallback={null}>
+            <Suspense key={photo.id + '-' + i} fallback={null}>
               <CarouselFrame 
                 url={photo.url} 
                 index={i} 
@@ -145,7 +158,7 @@ export default function App() {
       {!isPlaying && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
           <div className="text-white/10 text-[10px] uppercase tracking-[2.5em] animate-pulse">
-            Rotate the Gallery
+            Scroll to Navigate
           </div>
         </div>
       )}
