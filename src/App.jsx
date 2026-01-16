@@ -22,37 +22,46 @@ const DisneyBackground = () => {
 
   return (
     <div className="fixed inset-0 z-0 overflow-hidden">
-      {/* Deep night sky gradient - Disney style */}
+      {/* Futuristic dark gradient */}
       <div 
         className="absolute inset-0 w-full h-full"
         style={{
-          background: 'radial-gradient(ellipse at center, #1a0a2e 0%, #0d0d1a 40%, #000000 100%)'
+          background: 'radial-gradient(ellipse at center, #0a0e27 0%, #050810 40%, #000000 100%)'
         }}
       />
       
-      {/* Secondary gradient for depth */}
+      {/* Secondary gradient for depth - modern dark theme */}
       <div 
-        className="absolute inset-0 w-full h-full opacity-60"
+        className="absolute inset-0 w-full h-full opacity-70"
         style={{
-          background: 'linear-gradient(180deg, #2d1b4e 0%, #1a0a2e 30%, #000000 70%, #000000 100%)'
+          background: 'linear-gradient(180deg, #0f1629 0%, #0a0e27 30%, #000000 70%, #000000 100%)'
         }}
       />
 
-      {/* Twinkling Stars */}
+      {/* Futuristic cyan accent gradient */}
+      <div 
+        className="absolute inset-0 w-full h-full opacity-5"
+        style={{
+          background: 'radial-gradient(ellipse 100% 50% at 50% 0%, rgba(0, 240, 255, 0.1) 0%, transparent 70%)'
+        }}
+      />
+
+      {/* Twinkling Stars - Futuristic cyan glow */}
       <div className="absolute inset-0">
         {stars.map((star, i) => (
           <motion.div
             key={i}
-            className="absolute rounded-full bg-white"
+            className="absolute rounded-full"
             style={{
               left: `${star.x}%`,
               top: `${star.y}%`,
               width: `${star.size}px`,
               height: `${star.size}px`,
-              boxShadow: `0 0 ${star.size * 2}px rgba(255, 255, 255, 0.8)`
+              background: 'radial-gradient(circle, #00F0FF 0%, #0099FF 50%, transparent 100%)',
+              boxShadow: `0 0 ${star.size * 2}px rgba(0, 240, 255, 0.6), 0 0 ${star.size * 4}px rgba(0, 240, 255, 0.3)`
             }}
             animate={{
-              opacity: [0.2, 1, 0.2, 1, 0.2],
+              opacity: [0.3, 1, 0.3, 1, 0.3],
               scale: [0.8, 1.2, 0.8, 1.1, 0.8],
             }}
             transition={{
@@ -65,15 +74,15 @@ const DisneyBackground = () => {
         ))}
       </div>
 
-      {/* Subtle cloud layers for depth */}
+      {/* Futuristic energy layers */}
       <motion.div
-        className="absolute inset-0 opacity-10"
+        className="absolute inset-0 opacity-8"
         style={{
-          background: 'radial-gradient(ellipse 80% 50% at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)'
+          background: 'radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0, 240, 255, 0.08) 0%, transparent 50%)'
         }}
         animate={{
           x: [0, 50, 0],
-          opacity: [0.05, 0.15, 0.05]
+          opacity: [0.03, 0.12, 0.03]
         }}
         transition={{
           duration: 30,
@@ -82,13 +91,13 @@ const DisneyBackground = () => {
         }}
       />
       <motion.div
-        className="absolute inset-0 opacity-8"
+        className="absolute inset-0 opacity-6"
         style={{
-          background: 'radial-gradient(ellipse 60% 40% at 80% 60%, rgba(255,255,255,0.08) 0%, transparent 50%)'
+          background: 'radial-gradient(ellipse 60% 40% at 80% 60%, rgba(0, 153, 255, 0.06) 0%, transparent 50%)'
         }}
         animate={{
           x: [0, -40, 0],
-          opacity: [0.05, 0.12, 0.05]
+          opacity: [0.02, 0.10, 0.02]
         }}
         transition={{
           duration: 25,
@@ -155,8 +164,8 @@ const Fireflies = () => {
           style={{
             width: `${fly.size}px`,
             height: `${fly.size}px`,
-            background: 'radial-gradient(circle, #FFEB3B 0%, #FFC107 50%, transparent 100%)',
-            boxShadow: `0 0 ${fly.size * 3}px #FFEB3B, 0 0 ${fly.size * 5}px rgba(255, 235, 59, 0.5)`,
+            background: 'radial-gradient(circle, #00F0FF 0%, #0099FF 50%, transparent 100%)',
+            boxShadow: `0 0 ${fly.size * 3}px #00F0FF, 0 0 ${fly.size * 5}px rgba(0, 240, 255, 0.6)`,
             filter: 'blur(0.5px)'
           }}
         />
@@ -287,11 +296,15 @@ export default function App() {
       <DisneyBackground />
       <Fireflies />
 
-      {/* Scroll Progress Bar (DeSo-style) */}
-      <div className="fixed top-0 left-0 right-0 h-1 bg-white/10 z-50">
+      {/* Scroll Progress Bar (Futuristic) */}
+      <div className="fixed top-0 left-0 right-0 h-1 bg-white/5 z-50">
         <motion.div 
-          className="h-full bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400"
-          style={{ width: scrollProgressWidth }}
+          className="h-full"
+          style={{ 
+            width: scrollProgressWidth,
+            background: 'linear-gradient(90deg, #00F0FF 0%, #0099FF 50%, #00F0FF 100%)',
+            boxShadow: '0 0 10px rgba(0, 240, 255, 0.8)'
+          }}
         />
       </div>
 
@@ -377,14 +390,20 @@ export default function App() {
                         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                       >
                         <motion.div
-                          className="h-[2px] bg-gradient-to-r from-yellow-400 to-transparent"
+                          className="h-[2px]"
                           initial={{ scaleX: 0 }}
                           animate={{ scaleX: isActive ? 1 : 0 }}
                           transition={{ duration: 0.6, delay: 0.2 }}
-                          style={{ width: '80px' }}
+                          style={{ 
+                            width: '80px',
+                            background: 'linear-gradient(90deg, #00F0FF 0%, transparent 100%)',
+                            boxShadow: '0 0 8px rgba(0, 240, 255, 0.6)'
+                          }}
                         />
                         <div className="flex flex-col gap-2">
-                          <span className="text-yellow-400 text-xs font-bold tracking-widest uppercase">
+                          <span className="text-xs font-bold tracking-widest uppercase"
+                            style={{ color: '#00F0FF', textShadow: '0 0 10px rgba(0, 240, 255, 0.8)' }}
+                          >
                             {milestone.label}
                           </span>
                           <span className="text-2xl">{milestone.icon}</span>
@@ -443,9 +462,13 @@ export default function App() {
                 }}
                 className={`flex-shrink-0 h-16 w-16 rounded-2xl overflow-hidden cursor-pointer transition-all duration-700 shadow-2xl ${
                   i === currentIndex 
-                    ? 'ring-4 ring-yellow-400 ring-offset-4 ring-offset-black scale-125 z-10' 
+                    ? 'ring-4 ring-offset-4 ring-offset-black scale-125 z-10' 
                     : 'opacity-20 grayscale hover:grayscale-0 hover:opacity-100'
                 }`}
+                style={i === currentIndex ? {
+                  border: '4px solid #00F0FF',
+                  boxShadow: '0 0 20px rgba(0, 240, 255, 0.8), 0 0 40px rgba(0, 240, 255, 0.4)'
+                } : {}}
                 style={{ transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)' }}
               >
                 <img src={photo.url} className="w-full h-full object-cover" alt="" />
@@ -490,9 +513,14 @@ export default function App() {
                 <motion.div 
                   className={`p-4 rounded-full border transition-all duration-700 ${
                     currentIndex >= milestone.index 
-                      ? 'bg-yellow-400/20 border-yellow-400 shadow-[0_0_20px_rgba(255,218,89,0.5)]' 
+                      ? 'border-white/20' 
                       : 'border-white/10'
                   }`}
+                  style={currentIndex >= milestone.index ? {
+                    background: 'rgba(0, 240, 255, 0.15)',
+                    borderColor: '#00F0FF',
+                    boxShadow: '0 0 20px rgba(0, 240, 255, 0.6), inset 0 0 20px rgba(0, 240, 255, 0.2)'
+                  } : {}}
                   animate={{
                     scale: currentIndex >= milestone.index ? [1, 1.1, 1] : 1
                   }}
@@ -500,9 +528,15 @@ export default function App() {
                 >
                   <span className="text-2xl">{milestone.icon}</span>
                 </motion.div>
-                <span className={`text-[10px] font-bold tracking-[0.3em] uppercase transition-all ${
-                  currentIndex >= milestone.index ? 'text-yellow-400 shadow-glow' : 'text-white/20'
-                }`}>
+                <span 
+                  className={`text-[10px] font-bold tracking-[0.3em] uppercase transition-all ${
+                    currentIndex >= milestone.index ? 'shadow-glow' : 'text-white/20'
+                  }`}
+                  style={currentIndex >= milestone.index ? {
+                    color: '#00F0FF',
+                    textShadow: '0 0 15px rgba(0, 240, 255, 0.8)'
+                  } : {}}
+                >
                   {milestone.label}
                 </span>
               </motion.button>
@@ -521,7 +555,13 @@ export default function App() {
             }}
             className="flex items-center gap-3"
           >
-            <div className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-yellow-400 animate-ping' : 'bg-white/20'}`} />
+            <div 
+              className={`w-2 h-2 rounded-full ${isPlaying ? 'animate-ping' : 'bg-white/20'}`}
+              style={isPlaying ? {
+                background: '#00F0FF',
+                boxShadow: '0 0 10px rgba(0, 240, 255, 0.8)'
+              } : {}}
+            />
             <span className="text-[8px] font-bold tracking-widest uppercase">Audio</span>
           </button>
         </div>
@@ -538,16 +578,16 @@ export default function App() {
           appearance: none;
           width: 24px;
           height: 24px;
-          background: #FFDA59;
+          background: #00F0FF;
           border-radius: 50%;
           cursor: pointer;
-          box-shadow: 0 0 20px rgba(255,218,89,0.6);
+          box-shadow: 0 0 20px rgba(0, 240, 255, 0.8), 0 0 40px rgba(0, 240, 255, 0.4);
           transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
         
         .universe-slider::-webkit-slider-thumb:hover {
           transform: scale(1.3);
-          box-shadow: 0 0 30px rgba(255,218,89,0.8);
+          box-shadow: 0 0 30px rgba(0, 240, 255, 1), 0 0 60px rgba(0, 240, 255, 0.6);
         }
       `}} />
     </div>
