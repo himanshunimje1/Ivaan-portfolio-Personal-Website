@@ -123,69 +123,68 @@ export default function App() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#1a1f3c_0%,#02040a_100%)]" />
       <Sparkles />
       
-      {/* Main Photo Viewer - EXTRA BIG */}
-      <div className="relative flex-[1.5] flex items-center justify-center overflow-hidden px-4 pt-12 pb-4">
-        <AnimatePresence initial={false} custom={direction}>
+      {/* Main Photo Viewer - 75% HEIGHT FOCUS */}
+      <div className="relative h-[75vh] flex items-center justify-center overflow-hidden px-4 pt-6 pb-2">
+        <AnimatePresence mode="wait">
           <motion.div
             key={currentIndex}
-            custom={direction}
-            initial={{ opacity: 0, scale: 0.9, filter: "blur(20px)" }}
+            initial={{ opacity: 0, scale: 0.95, filter: "blur(30px)" }}
             animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, scale: 1.1, filter: "blur(20px)" }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute w-full h-full flex items-center justify-center p-4"
+            exit={{ opacity: 0, scale: 1.05, filter: "blur(30px)" }}
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute w-full h-full flex items-center justify-center"
           >
-            <div className="relative w-full h-full max-w-6xl flex items-center justify-center group">
-              {/* Golden Magic Frame */}
-              <div className="absolute -inset-2 bg-gradient-to-tr from-yellow-600/30 via-yellow-200/40 to-yellow-600/30 rounded-[2rem] blur-xl opacity-40 group-hover:opacity-100 transition-opacity duration-1000" />
+            <div className="relative w-full h-full max-w-[95vw] flex items-center justify-center group">
+              {/* Cinematic Aura */}
+              <div className="absolute -inset-10 bg-gradient-to-tr from-blue-600/10 via-yellow-200/20 to-purple-600/10 rounded-[3rem] blur-3xl opacity-30" />
               <img
                 src={currentPhoto.url}
-                className="relative max-w-full max-h-full object-contain rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-yellow-200/20"
+                className="relative max-w-full max-h-full object-contain rounded-lg shadow-[0_0_80px_rgba(0,0,0,0.9)] border border-white/5"
                 alt=""
               />
             </div>
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation Arrows */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-12 z-20 pointer-events-none">
+        {/* Floating Magic Controls */}
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-8 z-20 pointer-events-none">
           <motion.button 
-            whileHover={{ scale: 1.2, rotate: -10 }}
+            whileHover={{ scale: 1.2, x: -10 }}
             onClick={() => paginate(-1)}
-            className={`pointer-events-auto p-6 rounded-full bg-white/5 backdrop-blur-3xl border border-yellow-200/10 shadow-[0_0_20px_rgba(255,215,0,0.1)] transition-all ${currentIndex === 0 ? 'opacity-0' : 'opacity-100'}`}
+            className={`pointer-events-auto p-5 rounded-full bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl transition-all ${currentIndex === 0 ? 'opacity-0 scale-0' : 'opacity-100'}`}
           >
-            <span className="text-3xl drop-shadow-[0_0_10px_#ffd700]">✨</span>
+            <span className="text-2xl filter drop-shadow-[0_0_8px_#ffd700]">✨</span>
           </motion.button>
           <motion.button 
-            whileHover={{ scale: 1.2, rotate: 10 }}
+            whileHover={{ scale: 1.2, x: 10 }}
             onClick={() => paginate(1)}
-            className={`pointer-events-auto p-6 rounded-full bg-white/5 backdrop-blur-3xl border border-yellow-200/10 shadow-[0_0_20px_rgba(255,215,0,0.1)] transition-all ${currentIndex === photos.length - 1 ? 'opacity-0' : 'opacity-100'}`}
+            className={`pointer-events-auto p-5 rounded-full bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl transition-all ${currentIndex === photos.length - 1 ? 'opacity-0 scale-0' : 'opacity-100'}`}
           >
-            <span className="text-3xl drop-shadow-[0_0_10px_#ffd700]">✨</span>
+            <span className="text-2xl filter drop-shadow-[0_0_8px_#ffd700]">✨</span>
           </motion.button>
         </div>
       </div>
 
-      {/* Bottom Tray Section */}
-      <div className="relative z-30 w-full flex flex-col gap-6 pb-12 pt-4 bg-gradient-to-t from-black to-transparent">
+      {/* 25% Bottom Section */}
+      <div className="h-[25vh] relative z-30 w-full flex flex-col justify-center gap-4 pb-6 pt-2 bg-gradient-to-t from-black via-black/80 to-transparent">
         
-        {/* 1. Thumbnail Strip (Above) */}
+        {/* 1. Thumbnail Strip (Very Minimal & Classy) */}
         <div 
           ref={thumbnailRef}
-          className="flex gap-4 overflow-x-auto no-scrollbar py-4 px-20 scroll-smooth w-full"
+          className="flex gap-3 overflow-x-auto no-scrollbar px-20 scroll-smooth w-full items-center h-16"
         >
           {photos.map((photo, i) => (
             <motion.div
               key={photo.id}
-              whileHover={{ scale: 1.15, y: -10 }}
+              whileHover={{ scale: 1.1, y: -5 }}
               onClick={() => {
                 setDirection(i > currentIndex ? 1 : -1);
                 setCurrentIndex(i);
               }}
-              className={`flex-shrink-0 h-24 w-24 rounded-2xl overflow-hidden cursor-pointer transition-all duration-700 shadow-2xl ${
+              className={`flex-shrink-0 h-12 w-12 rounded-lg overflow-hidden cursor-pointer transition-all duration-700 ${
                 i === currentIndex 
-                  ? 'ring-4 ring-yellow-400 ring-offset-4 ring-offset-[#02040a] scale-125 z-10' 
-                  : 'opacity-30 grayscale'
+                  ? 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-black scale-125 z-10' 
+                  : 'opacity-20 grayscale hover:grayscale-0 hover:opacity-100'
               }`}
             >
               <img src={photo.url} className="w-full h-full object-cover" alt="" />
@@ -193,9 +192,9 @@ export default function App() {
           ))}
         </div>
 
-        {/* 2. Magic Scrubber Bar (Middle) */}
-        <div className="w-full max-w-4xl mx-auto px-12 relative h-12 flex items-center">
-          <div className="absolute inset-x-12 h-[2px] bg-gradient-to-r from-transparent via-yellow-200/20 to-transparent rounded-full" />
+        {/* 2. Magic Slider */}
+        <div className="w-full max-w-3xl mx-auto px-12 relative h-6 flex items-center">
+          <div className="absolute inset-x-12 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
           <input
             type="range"
             min="0"
@@ -208,38 +207,34 @@ export default function App() {
           />
         </div>
 
-        {/* 3. Milestones Slider (Very Bottom) */}
-        <div className="w-full max-w-2xl mx-auto flex justify-between items-center relative px-8 py-2">
+        {/* 3. Milestone Bar (Floating above bottom) */}
+        <div className="w-full max-w-xl mx-auto flex justify-between items-center relative px-8">
           {milestones.map((milestone) => (
             <motion.button
               key={milestone.id}
-              whileHover={{ scale: 1.2, y: -5 }}
+              whileHover={{ y: -3 }}
               onClick={() => {
                 setDirection(milestone.index > currentIndex ? 1 : -1);
                 setCurrentIndex(milestone.index);
               }}
-              className={`flex flex-col items-center gap-3 transition-all duration-1000 ${
+              className={`flex flex-col items-center gap-1 transition-all duration-1000 ${
                 currentIndex >= milestone.index ? 'opacity-100' : 'opacity-20'
               }`}
             >
-              <div className={`p-4 rounded-full border transition-all duration-700 ${
-                currentIndex >= milestone.index 
-                  ? 'bg-yellow-400/20 border-yellow-400 shadow-[0_0_20px_#ffd700]' 
-                  : 'border-white/10'
-              }`}>
-                <span className="text-2xl">{milestone.icon}</span>
-              </div>
-              <span className={`text-[10px] font-bold tracking-[0.3em] uppercase transition-all ${
+              <span className={`text-[10px] font-black tracking-[0.4em] uppercase transition-all ${
                 currentIndex >= milestone.index ? 'text-yellow-200 shadow-glow' : 'text-white/20'
               }`}>
                 {milestone.label}
               </span>
+              <div className={`w-1 h-1 rounded-full transition-all duration-700 ${
+                currentIndex >= milestone.index ? 'bg-yellow-400 shadow-[0_0_10px_#ffd700]' : 'bg-white/10'
+              }`} />
             </motion.button>
           ))}
         </div>
 
         {/* Audio Pulse */}
-        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 opacity-20 hover:opacity-100 transition-opacity">
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 opacity-20 hover:opacity-100 transition-opacity">
           <button 
             onClick={() => {
               if (audioRef.current) {
@@ -249,7 +244,6 @@ export default function App() {
             }}
             className="flex flex-col items-center gap-1 group"
           >
-            <div className="text-[8px] font-bold tracking-[0.5em] uppercase text-yellow-200">Magic Audio</div>
             <div className={`w-1 h-1 rounded-full ${isPlaying ? 'bg-yellow-400 animate-ping' : 'bg-white/20'}`} />
           </button>
         </div>
@@ -264,18 +258,18 @@ export default function App() {
         .disney-slider::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
-          width: 30px;
-          height: 30px;
+          width: 16px;
+          height: 16px;
           background: #fff;
-          border: 4px solid #ffd700;
+          border: 2px solid #ffd700;
           border-radius: 50%;
           cursor: pointer;
-          box-shadow: 0 0 20px #ffd700, inset 0 0 10px #ffd700;
-          transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+          box-shadow: 0 0 15px #ffd700;
+          transition: transform 0.3s ease;
         }
         
         .disney-slider::-webkit-slider-thumb:hover {
-          transform: scale(1.3) rotate(45deg);
+          transform: scale(1.4);
         }
       `}} />
     </div>
