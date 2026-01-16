@@ -1,4 +1,4 @@
-import React, { Suspense, useRef, useState, useEffect, useMemo } from 'react';
+import React, { Suspense, useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { 
   useTexture, 
@@ -8,60 +8,54 @@ import {
 } from '@react-three/drei';
 import * as THREE from 'three';
 
-function CarouselFrame({ url, index, total }) {
+function PhotoFrame({ url, index, total }) {
   const meshRef = useRef();
   const texture = useTexture(url);
   const scroll = useScroll();
   const { viewport } = useThree();
 
-  useFrame((state) => {
+  // Calculate the appropriate aspect ratio for the frame to avoid stretching
+  const imageAspect = texture.image.width / texture.image.height;
+  const viewportAspect = viewport.width / viewport.height;
+  
+  // Base dimensions - we want the photo to fit nicely in the screen
+  let width, height;
+  if (imageAspect > viewportAspect) {
+    // Landscape photo
+    width = viewport.width * 0.8;
+    height = width / imageAspect;
+  } else {
+    // Portrait photo
+    height = viewport.height * 0.8;
+    width = height * imageAspect;
+  }
+
+  useFrame(() => {
     if (!meshRef.current) return;
     const scrollOffset = scroll.offset;
     const personalOffset = index / total;
-    let distance = scrollOffset - personalOffset;
+    const distance = scrollOffset - personalOffset;
     
-    if (distance > 0.5) distance -= 1;
-    if (distance < -0.5) distance += 1;
-
-    const radius = viewport.width * 0.8; 
-    const angle = distance * Math.PI * 2;
-    
-    const targetX = Math.sin(angle) * radius;
-    const targetZ = Math.cos(angle) * radius - radius; 
-
+    // Smooth horizontal transition
+    // One picture at a time: current photo is at x=0
+    const targetX = -distance * viewport.width * 1.2;
     meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, targetX, 0.1);
-    meshRef.current.position.z = THREE.MathUtils.lerp(meshRef.current.position.z, targetZ, 0.1);
-    meshRef.current.rotation.y = THREE.MathUtils.lerp(meshRef.current.rotation.y, angle, 0.1);
-
-    const visibility = Math.max(0, 1 - Math.abs(distance) * 5);
     
-    meshRef.current.children.forEach(child => {
-      if (child.material) {
-        child.material.opacity = THREE.MathUtils.lerp(child.material.opacity, visibility, 0.1);
-        child.material.transparent = true;
-      }
-    });
-
-    const focus = 1 - Math.min(Math.abs(distance) * 4, 1);
-    const targetScale = 0.7 + focus * 0.3; 
-    meshRef.current.scale.setScalar(THREE.MathUtils.lerp(meshRef.current.scale.x, targetScale, 0.1));
+    // Opacity logic: only show the main one clearly
+    const opacity = Math.max(0, 1 - Math.abs(distance) * 5);
+    meshRef.current.material.opacity = THREE.MathUtils.lerp(meshRef.current.material.opacity, opacity, 0.1);
+    meshRef.current.material.transparent = true;
+    
+    // Subtle scale: slightly smaller when not active
+    const scale = 0.9 + opacity * 0.1;
+    meshRef.current.scale.setScalar(scale);
   });
 
   return (
-    <group ref={meshRef}>
-      <mesh position={[0, 0, -0.05]}>
-        <planeGeometry args={[viewport.width * 0.7, viewport.height * 0.8]} />
-        <meshStandardMaterial color="#ffffff" transparent opacity={0.05} roughness={0.1} metalness={0.9} />
-      </mesh>
-      <mesh>
-        <planeGeometry args={[viewport.width * 0.7, viewport.height * 0.8]} />
-        <meshBasicMaterial map={texture} side={THREE.DoubleSide} transparent />
-      </mesh>
-      <mesh position={[0, 0, 0.01]}>
-        <planeGeometry args={[viewport.width * 0.702, viewport.height * 0.802]} />
-        <meshBasicMaterial color="white" transparent opacity={0.05} wireframe />
-      </mesh>
-    </group>
+    <mesh ref={meshRef}>
+      <planeGeometry args={[width, height]} />
+      <meshBasicMaterial map={texture} transparent opacity={0} />
+    </mesh>
   );
 }
 
@@ -69,14 +63,12 @@ function Scene({ photos }) {
   return (
     <>
       <color attach="background" args={['#000000']} />
-      <ambientLight intensity={2} />
-      <pointLight position={[10, 10, 10]} intensity={5} />
       
-      <ScrollControls pages={photos.length} damping={0.4}>
+      <ScrollControls pages={photos.length} damping={0.4} horizontal>
         <Scroll>
           {photos.map((photo, i) => (
             <Suspense key={photo.url} fallback={null}>
-              <CarouselFrame url={photo.url} index={i} total={photos.length} />
+              <PhotoFrame url={photo.url} index={i} total={photos.length} />
             </Suspense>
           ))}
         </Scroll>
@@ -91,7 +83,6 @@ export default function App() {
   const audioRef = useRef(null);
 
   useEffect(() => {
-    // Fetch the dynamic manifest
     fetch('/diary/manifest.json')
       .then(res => res.json())
       .then(data => setPhotos(data))
@@ -112,18 +103,22 @@ export default function App() {
     };
   }, []);
 
-  if (photos.length === 0) return <div className="h-screen w-screen bg-black flex items-center justify-center text-white/20 uppercase tracking-[2em] animate-pulse">Loading...</div>;
+  if (photos.length === 0) return (
+    <div className="h-screen w-screen bg-black flex items-center justify-center text-white/20 uppercase tracking-[2em] animate-pulse">
+      Loading...
+    </div>
+  );
 
   return (
     <div className="h-screen w-screen bg-black relative">
       <audio ref={audioRef} src="/diary/audio/ambient.mp3" loop />
-      <Canvas camera={{ position: [0, 0, 10], fov: 40 }}>
+      <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
         <Scene photos={photos} />
       </Canvas>
 
       {!isPlaying && (
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
-          <div className="text-white/20 text-[10px] uppercase tracking-[3em] animate-pulse">Explore</div>
+          <div className="text-white/20 text-[10px] uppercase tracking-[3em] animate-pulse">Ivaan Portfolio</div>
         </div>
       )}
 
