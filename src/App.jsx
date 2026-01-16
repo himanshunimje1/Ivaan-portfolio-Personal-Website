@@ -6,6 +6,7 @@ export default function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isScrubbing, setIsScrubbing] = useState(false);
   const audioRef = useRef(null);
   const thumbnailRef = useRef(null);
 
@@ -26,7 +27,7 @@ export default function App() {
 
   // Center the active thumbnail when index changes
   useEffect(() => {
-    if (thumbnailRef.current) {
+    if (thumbnailRef.current && !isScrubbing) {
       const activeThumb = thumbnailRef.current.children[currentIndex];
       if (activeThumb) {
         activeThumb.scrollIntoView({
@@ -36,7 +37,7 @@ export default function App() {
         });
       }
     }
-  }, [currentIndex]);
+  }, [currentIndex, isScrubbing]);
 
   const paginate = (newDirection) => {
     const nextIndex = currentIndex + newDirection;
@@ -46,17 +47,29 @@ export default function App() {
     }
   };
 
+  // Scrubber handler
+  const handleScrub = (e) => {
+    const newIndex = parseInt(e.target.value);
+    if (newIndex !== currentIndex) {
+      setDirection(newIndex > currentIndex ? 1 : -1);
+      setCurrentIndex(newIndex);
+    }
+  };
+
   // Add scroll/wheel listener for picture changing
   useEffect(() => {
+    let lastScrollTime = 0;
     const handleWheel = (e) => {
-      // deltaY > 0 means scroll down -> next picture (right)
-      // deltaY < 0 means scroll up -> previous picture (left)
-      if (Math.abs(e.deltaY) > 30) { // Threshold to prevent too fast switching
+      const now = Date.now();
+      if (now - lastScrollTime < 300) return; // Prevent too rapid switching
+
+      if (Math.abs(e.deltaY) > 20) {
         if (e.deltaY > 0) {
           paginate(1);
         } else {
           paginate(-1);
         }
+        lastScrollTime = now;
       }
     };
 
@@ -147,9 +160,30 @@ export default function App() {
         </div>
       </div>
 
-      {/* Bottom Filmstrip & Tools */}
-      <div className="bg-gradient-to-t from-black to-transparent pt-10 pb-8 px-4 flex flex-col gap-6 z-30">
+      {/* Bottom Scrubber & Filmstrip */}
+      <div className="bg-gradient-to-t from-black to-transparent pt-10 pb-8 px-4 flex flex-col gap-8 z-30">
         
+        {/* Apple Style Slider Bar */}
+        <div className="w-full max-w-lg mx-auto px-10 relative group">
+          <div className="absolute inset-x-10 top-1/2 -translate-y-1/2 h-0.5 bg-white/10 rounded-full" />
+          <input
+            type="range"
+            min="0"
+            max={photos.length - 1}
+            value={currentIndex}
+            onChange={handleScrub}
+            onMouseDown={() => setIsScrubbing(true)}
+            onMouseUp={() => setIsScrubbing(false)}
+            onTouchStart={() => setIsScrubbing(true)}
+            onTouchEnd={() => setIsScrubbing(false)}
+            className="relative w-full h-8 bg-transparent appearance-none cursor-pointer z-10 apple-slider"
+          />
+          {/* Index Counter */}
+          <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[9px] text-white/30 font-medium tracking-[0.3em] uppercase">
+            {currentIndex + 1} / {photos.length}
+          </div>
+        </div>
+
         {/* Thumbnail Scrubber */}
         <div 
           ref={thumbnailRef}
@@ -175,8 +209,7 @@ export default function App() {
 
         {/* Bottom Actions Bar - Minimalized */}
         <div className="flex items-center justify-center px-6 text-white/80 max-w-md mx-auto w-full">
-          {/* Audio toggle in place of old icons */}
-          <div className="flex items-center gap-4 bg-white/5 backdrop-blur-2xl rounded-full px-6 py-2.5 border border-white/10 shadow-xl">
+          <div className="flex items-center gap-4 bg-white/5 backdrop-blur-2xl rounded-full px-6 py-2 border border-white/10 shadow-xl">
             <button 
               onClick={() => {
                 if (audioRef.current) {
@@ -184,16 +217,50 @@ export default function App() {
                   setIsPlaying(!isPlaying);
                 }
               }}
-              className="flex items-center gap-3 group"
+              className="flex items-center gap-3"
             >
-              <div className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${isPlaying ? 'bg-blue-400 shadow-[0_0_10px_cyan] scale-110' : 'bg-white/10'}`} />
-              <span className={`text-[10px] font-bold tracking-[0.3em] uppercase transition-colors ${isPlaying ? 'text-white' : 'text-white/30'}`}>
-                {isPlaying ? 'Sound Active' : 'Sound Muted'}
+              <div className={`w-2 h-2 rounded-full transition-all duration-500 ${isPlaying ? 'bg-blue-400 shadow-[0_0_10px_cyan]' : 'bg-white/10'}`} />
+              <span className={`text-[9px] font-bold tracking-[0.2em] uppercase transition-colors ${isPlaying ? 'text-white' : 'text-white/20'}`}>
+                Audio
               </span>
             </button>
           </div>
         </div>
       </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .apple-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 14px;
+          height: 14px;
+          background: white;
+          border-radius: 50%;
+          cursor: pointer;
+          box-shadow: 0 0 10px rgba(0,0,0,0.5);
+          transition: transform 0.2s ease;
+        }
+        
+        .apple-slider::-webkit-slider-thumb:hover {
+          transform: scale(1.3);
+        }
+
+        .apple-slider::-moz-range-thumb {
+          width: 14px;
+          height: 14px;
+          background: white;
+          border: none;
+          border-radius: 50%;
+          cursor: pointer;
+          box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+      `}} />
+    </div>
+  );
+}
 
       <style dangerouslySetInnerHTML={{ __html: `
         .no-scrollbar::-webkit-scrollbar { display: none; }
